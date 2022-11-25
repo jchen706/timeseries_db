@@ -4,12 +4,21 @@ Connect to timescale db
 # from distutils import command
 import psycopg2
 from psycopg2.extras import RealDictCursor
+from concurrent.futures import ThreadPoolExecutor, as_completed, ALL_COMPLETED
+import concurrent
+import pandas as pd
+import sys 
+import os
+pd.options.display.max_rows = 10
+import time
+from psycopg2.pool import ThreadedConnectionPool
+
 
 def create_tables(cursor):
   # create regular postresql table
   commands = (
     """
-    CREATE TABLE IF NOT EXISTS stocks (
+    CREATE TABLE IF NOT EXISTS stocks3 (
       time DATE NOT NULL,
       symbol TEXT NOT NULL,
       open DOUBLE PRECISION NULL,
@@ -22,63 +31,117 @@ def create_tables(cursor):
     """
   )
   cursor.execute(commands)
-  create_ext = "CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;"
+  create_ext = "CREATE EXTENSION IF NOT EXISTS timescaledb;"
   cursor.execute(create_ext)
   
-
   # create hypertable
-  query_create__hypertable = "SELECT create_hypertable('stock_data', 'time', if_not_exists => true);"
+  query_create__hypertable = "SELECT create_hypertable('stocks3', 'time', if_not_exists => true);"
   cursor.execute(query_create__hypertable)
-
-  
-  # create table company
-  # query_create_company_table = """CREATE TABLE company (
-  #                                          symbol TEXT NOT NULL,
-  #                                          name text NOT NULL,
-  #                                          );"""
-
-# postgres
-# docker exec -u root -i -t timescaledb /bin/bash  
+ 
 CONNECTION = "postgres://postgres:123@localhost:5432/postgres"
 def connect():  
-    conn = psycopg2.connect(CONNECTION)
+    # conn = psycopg2.connect(
+    #   # CONNECTION
+    #   dbname="postgres",
+    #   user="postgres",
+    #   password="123",
+    #   host="localhost",
+    #   port="5432",
+    #   keepalives=1,
+    #   keepalives_idle=30,
+    #   keepalives_interval=10,
+    #   keepalives_count=5
+    #   )
+    tcp = ThreadedConnectionPool(1, 10, dbname="postgres",
+      user="postgres",
+      password="123",
+      host="localhost",
+      port="5432",
+      keepalives=1,
+      keepalives_idle=30,
+      keepalives_interval=10,
+      keepalives_count=5 )
+    conn = tcp.getconn()
     cursor = conn.cursor()
+
+
     # use the cursor to interact with your database
     cursor.execute("SELECT 'hello world'")
     print(cursor.fetchone())
 
-    # create_tables(cursor)
-    # conn.commit()
+    create_tables(cursor)
+    conn.commit()
 
+    #insert data
+    inject(conn)
+
+    conn.close()
+
+def inject_thread(rowlist, conn):
+  # print(rowlist)
+  ins = "INSERT INTO stocks3 (time, open, high, low, close, adj_close, volume, symbol) VALUES (%s,%s,%s,%s,%s,%s,%s, %s)"
+  cursor = conn.cursor()
+  # print("here")
+  try:
+    # s = time.time()
+    # print('excute')
+    cursor.executemany(ins, rowlist)
+    conn.commit()
+    # print(" executemany time:", time.time() - s)
+  except Exception as e:
+    print(e)
+    conn.rollback()
+
+
+def inject_many(conn):
+  print('injecting data with many')
+  #insert data into the table
+  df = pd.read_csv('../stock_csv/ALLE.csv')
+  print(df)
+  print(len(df))
+  itemBank = list(zip(*map(df.get, df)))
+  print(itemBank)
+  # insert at once with python library
+  ins = "INSERT INTO stocks (time, open, high, low, close, adj_close, volume, symbol) VALUES (%s,%s,%s,%s,%s,%s,%s, %s)"
+  cursor = conn.cursor() 
+  try:
+    s = time.time()
+    cursor.executemany(ins, itemBank)
+    conn.commit()
+    print(" executemany time:", time.time() - s)
+  except Exception as e:
+    print(e)
+    conn.rollback()
 
 """
-Hypertable
-
-Chunks: child tables of hypertable 
-
-chunks are broken up by time
-
-chunk time interval 
-
-partitioning by time
-
-faster when query or update data by time
-
-each junk has only 1 day interval period
-
-Inject data timescale db
+Write Into DB with threads
 """
-def inject():
+def inject(conn):
   print('injecting data')
 
-  # time
-  # multithreaded inject data
+  #insert data into the table
+  df = pd.read_csv('../stock_csv/ALLE.csv')
+  print(df)
+  print(len(df))
+  itemBank = list(zip(*map(df.get, df)))
 
-
-
-
-
-
+  print("Running threaded:")
+  threaded_start = time.time()
+  futures = []
+  with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+      
+      for i in range(0,len(df), 5):
+          # 5 item at a time
+          print(i,i+5)
+          if (i+5 > len(df)):
+            futures.append(executor.submit(inject_thread,rowlist=itemBank[i:len(df)],conn=conn))
+          else:
+            futures.append(executor.submit(inject_thread,rowlist=itemBank[i:i+5],conn=conn))
+      # for future in concurrent.futures.as_completed(futures):
+      #     pass
+          # print(future.result())
+  concurrent.futures.wait(futures,return_when=ALL_COMPLETED)
+  print("Threaded time:", time.time() - threaded_start)
 
 """
 Query Data From data timescale db
