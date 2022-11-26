@@ -27,6 +27,11 @@ from selenium.webdriver.firefox.options import Options
 options = Options()
 # options.binary_location = r'C:\Program Files\Mozilla Firefox\firefox.exe'
 options.add_argument("--headless")
+# set Download Location
+options.set_preference("browser.download.folderList", 2)
+
+options.set_preference("browser.download.dir", r"D:\a_timeseries")
+
 # prefs = {"profile.default_content_settings.popups": 0,    
 #         "download.default_directory":r"D:\a_timeseries", ### Set the path accordingly
 #         "download.prompt_for_download": False, ## change the downpath accordingly
@@ -119,6 +124,8 @@ def write_done(done_set):
     # writer.writeheader()
     for each in done_set:
      writer.writerow({'Symbol': each})
+
+# BLL ANTM
 
 def loopThroughCompanies():
   print('loop')

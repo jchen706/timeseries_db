@@ -12,6 +12,11 @@ import os
 pd.options.display.max_rows = 10
 import time
 from psycopg2.pool import ThreadedConnectionPool
+from psycopg2.extras import LoggingConnection
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 
 def create_tables(cursor):
@@ -72,8 +77,11 @@ def connect():
     create_tables(cursor)
     conn.commit()
 
-    #insert data
-    inject(conn)
+    # insert data
+    # inject(conn)
+
+    #query data
+    query(conn)
 
     conn.close()
 
@@ -146,8 +154,55 @@ def inject(conn):
 """
 Query Data From data timescale db
 """
-def query():
+def query(conn):
   print('query')
+  cursor = conn.cursor() 
+
+  # Simple aggregate max for a stock, every week for 1 month
+  agg_max_stock_week_one_month = """
+  select time_bucket('7 day', time) as bucket, max(close),symbol
+  from stocks3
+  where time > now() - Interval '1 month'
+  group by bucket, symbol
+  order by bucket, symbol
+  """
+  s = time.time()
+  cursor.execute(agg_max_stock_week_one_month)
+  print(" agg time:", time.time() - s)
+
+  results = cursor.fetchall()
+  print(results)
+
+  # Simple aggregate max for a stock, every week for 1 year
+
+  # Simple aggregate max on 5 stocks, every week for 1 month
+
+  # Simple aggregate max on 5 stocks, every week for 1 year
+
+  # Aggregate max across all stocks per week over 1 week
+
+  # Compute the average of a stock per week for 1 month
+
+  # Compute the average of all stocks per week for 1 month
+
+
+  # moving average
+
+  """
+  SELECT time, AVG(close) OVER(ORDER BY time
+      ROWS BETWEEN 9 PRECEDING AND CURRENT ROW)
+    AS ten_day_avg_close
+  FROM stocks3
+  WHERE time > NOW() - INTERVAL '1 month'
+  ORDER BY time DES
+  """
+
+
+  # automatic refresh policy
+
+
+
+  
 
 if __name__ == "__main__":
   print('connect')
