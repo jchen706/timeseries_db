@@ -2,6 +2,7 @@
 Connect to timescale db
 """
 # from distutils import command
+from glob import glob
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from concurrent.futures import ThreadPoolExecutor, as_completed, ALL_COMPLETED
@@ -18,12 +19,13 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+metrics = {'total_values': 0, 'total_rows': 0}
 
 def create_tables(cursor):
   # create regular postresql table
   commands = (
     """
-    CREATE TABLE IF NOT EXISTS stocks3 (
+    CREATE TABLE IF NOT EXISTS stocks (
       time DATE NOT NULL,
       symbol TEXT NOT NULL,
       open DOUBLE PRECISION NULL,
@@ -31,7 +33,7 @@ def create_tables(cursor):
       low DOUBLE PRECISION NULL,
       close DOUBLE PRECISION NULL,
       adj_close DOUBLE PRECISION NULL,
-      volume INT NULL
+      volume BIGINT NULL
     )
     """
   )
@@ -40,11 +42,13 @@ def create_tables(cursor):
   cursor.execute(create_ext)
   
   # create hypertable
-  query_create__hypertable = "SELECT create_hypertable('stocks3', 'time', if_not_exists => true);"
+  query_create__hypertable = "SELECT create_hypertable('stocks', 'time', if_not_exists => true);"
   cursor.execute(query_create__hypertable)
  
 CONNECTION = "postgres://postgres:123@localhost:5432/postgres"
+conn = None
 def connect():  
+    global conn
     # conn = psycopg2.connect(
     #   # CONNECTION
     #   dbname="postgres",
@@ -69,7 +73,6 @@ def connect():
     conn = tcp.getconn()
     cursor = conn.cursor()
 
-
     # use the cursor to interact with your database
     cursor.execute("SELECT 'hello world'")
     print(cursor.fetchone())
@@ -81,9 +84,8 @@ def connect():
     # inject(conn)
 
     #query data
-    query(conn)
+    # query(conn)
 
-    conn.close()
 
 def inject_thread(rowlist, conn):
   # print(rowlist)
@@ -101,14 +103,15 @@ def inject_thread(rowlist, conn):
     conn.rollback()
 
 
-def inject_many(conn):
-  print('injecting data with many')
+def inject_many(stock_path):
+  global conn
+  print('injecting data with many on ' + stock_path)
   #insert data into the table
-  df = pd.read_csv('../stock_csv/ALLE.csv')
+  df = pd.read_csv(stock_path)
   print(df)
   print(len(df))
   itemBank = list(zip(*map(df.get, df)))
-  print(itemBank)
+  # print(itemBank)
   # insert at once with python library
   ins = "INSERT INTO stocks (time, open, high, low, close, adj_close, volume, symbol) VALUES (%s,%s,%s,%s,%s,%s,%s, %s)"
   cursor = conn.cursor() 
@@ -125,7 +128,7 @@ def inject_many(conn):
 Write Into DB with threads
 """
 def inject(conn):
-  print('injecting data')
+  print('injecting data on path ')
 
   #insert data into the table
   df = pd.read_csv('../stock_csv/ALLE.csv')
@@ -136,6 +139,8 @@ def inject(conn):
   print("Running threaded:")
   threaded_start = time.time()
   futures = []
+  # queue
+  # popping of the futures
   with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
       
       for i in range(0,len(df), 5):
@@ -151,6 +156,11 @@ def inject(conn):
   concurrent.futures.wait(futures,return_when=ALL_COMPLETED)
   print("Threaded time:", time.time() - threaded_start)
 
+
+
+
+
+
 """
 Query Data From data timescale db
 """
@@ -159,6 +169,13 @@ def query(conn):
   cursor = conn.cursor() 
 
   # Simple aggregate max for a stock, every week for 1 month
+
+  """
+  SELECT 
+  
+  """
+
+
   agg_max_stock_week_one_month = """
   select time_bucket('7 day', time) as bucket, max(close),symbol
   from stocks3
@@ -174,20 +191,69 @@ def query(conn):
   print(results)
 
   # Simple aggregate max for a stock, every week for 1 year
+  agg_max_stock_week_one_year = """
+  select time_bucket('7 day', time) as bucket, max(close),symbol
+  from stocks3
+  where time > now() - Interval '1 year'
+  group by bucket, symbol
+  order by bucket, symbol
+  """
+  s = time.time()
+  cursor.execute(agg_max_stock_week_one_year)
+  print(" agg time:", time.time() - s)
+
+  results = cursor.fetchall()
+  print(results)
+
+  # where
 
   # Simple aggregate max on 5 stocks, every week for 1 month
+  agg_max_stock_week_five_one_month = """
+  select time_bucket('7 day', time) as bucket, max(close),symbol
+  from stocks3
+  where time > now() - Interval '1 month'
+  group by bucket, symbol
+  order by bucket, symbol
+  """
 
   # Simple aggregate max on 5 stocks, every week for 1 year
+  agg_max_stock_week_five_one_year = """
+  select time_bucket('7 day', time) as bucket, max(close),symbol
+  from stocks3
+  where time > now() - Interval '1 year'
+  group by bucket, symbol
+  order by bucket, symbol
+  """
 
   # Aggregate max across all stocks per week over 1 week
+  agg_max_stock_week_all_one_year = """
+  select time_bucket('7 day', time) as bucket, max(close),symbol
+  from stocks3
+  where time > now() - Interval '1 year'
+  group by bucket, symbol
+  order by bucket, symbol
+  """
+
 
   # Compute the average of a stock per week for 1 month
+  agg_avg_stock_week_one_month = """
+  select time_bucket('7 day', time) as bucket, avg(close),symbol
+  from stocks3
+  where time > now() - Interval '1 month'
+  group by bucket, symbol
+  order by bucket, symbol
+  """
 
   # Compute the average of all stocks per week for 1 month
-
-
+  agg_avg_stock_week_all_one_month = """
+  select time_bucket('7 day', time) as bucket, avg(close),symbol
+  from stocks3
+  where time > now() - Interval '1 month'
+  group by bucket, symbol
+  order by bucket, symbol
+  """
+  
   # moving average
-
   """
   SELECT time, AVG(close) OVER(ORDER BY time
       ROWS BETWEEN 9 PRECEDING AND CURRENT ROW)
@@ -198,12 +264,33 @@ def query(conn):
   """
 
 
-  # automatic refresh policy
-
-
-
-  
+def drop_tables(table_name):
+  global conn
+  drop = "DROP TABLE " + table_name
+  print('drop')
+  cursor = conn.cursor() 
+  cursor.execute(drop)
+  conn.commit()
 
 if __name__ == "__main__":
   print('connect')
   connect()
+  # drop_tables('stocks1')
+  # drop_tables('stocks2')
+  # drop_tables('stocks3')
+  # drop_tables('stocks')
+  
+  # '../stock_csv/ALLE.csv'
+  # '../stock_csv/A.csv'
+  # '../stock_csv/AAL.csv'
+  # '../stock_csv/AAP.csv'
+  # '../stock_csv/AAPL.csv'
+
+  inject_many('../stock_csv/ALLE.csv')
+  inject_many('../stock_csv/A.csv')
+  inject_many('../stock_csv/AAL.csv')
+  inject_many('../stock_csv/AAP.csv')
+  # inject_many('../stock_csv/AAPL.csv')
+
+  conn.close()
+
