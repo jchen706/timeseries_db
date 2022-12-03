@@ -257,8 +257,28 @@ def query(conn):
   """
 
 
-  
+
   # price greater than the ten day average
+  """
+  WITH ten_day_moving_average AS (
+     SELECT time, AVG(close) OVER(ORDER BY time
+      ROWS BETWEEN 9 PRECEDING AND CURRENT ROW)
+      AS ten_day_avg_close
+    FROM stocks3
+    WHERE time > NOW() - INTERVAL '1 month'
+    ORDER BY time DES
+  )
+
+  // days where greater than the 10 day moving average
+  
+  Select s.time
+  from ten_day_moving_average as t, stock as s
+  where s.close - t.ten_day_avg_close > 0
+  order by time des
+  
+  """
+
+
 
   # moving average
   """
@@ -271,7 +291,17 @@ def query(conn):
   """
 
   # subtract the open price of today from the close price of previous row
-  # get the gains of those
+  # get the gains or losses of those
+  """
+  SELECT time, close, close - LAG(close, 1, close) OVER(ORDER BY time)
+  AS change_of_price
+  FROM stocks
+  WHERE time > NOW() - INTERVAL '1 month' and symbol = 'ALLE'
+  ORDER BY time desc 
+  """
+
+
+
 
 
 def drop_tables(table_name):
