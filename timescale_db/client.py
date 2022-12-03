@@ -142,7 +142,6 @@ def inject(conn):
   # queue
   # popping of the futures
   with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
-      
       for i in range(0,len(df), 5):
           # 5 item at a time
           print(i,i+5)
@@ -155,6 +154,10 @@ def inject(conn):
           # print(future.result())
   concurrent.futures.wait(futures,return_when=ALL_COMPLETED)
   print("Threaded time:", time.time() - threaded_start)
+
+"""
+
+"""
 
 
 
@@ -194,7 +197,7 @@ def query(conn):
   agg_max_stock_week_one_year = """
   select time_bucket('7 day', time) as bucket, max(close),symbol
   from stocks3
-  where time > now() - Interval '1 year'
+  where time > now() - Interval '1 year' and symbol 
   group by bucket, symbol
   order by bucket, symbol
   """
@@ -252,7 +255,11 @@ def query(conn):
   group by bucket, symbol
   order by bucket, symbol
   """
+
+
   
+  # price greater than the ten day average
+
   # moving average
   """
   SELECT time, AVG(close) OVER(ORDER BY time
@@ -262,6 +269,9 @@ def query(conn):
   WHERE time > NOW() - INTERVAL '1 month'
   ORDER BY time DES
   """
+
+  # subtract the open price of today from the close price of previous row
+  # get the gains of those
 
 
 def drop_tables(table_name):
