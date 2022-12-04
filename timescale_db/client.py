@@ -124,10 +124,10 @@ def connect():
     #   )
 
     # threadpool connection
-    tcp = ThreadedConnectionPool(1, 20, dbname="postgres",
+    tcp = ThreadedConnectionPool(1, 10, dbname="postgres",
       user="postgres",
       password="123",
-      host="54.221.23.28",
+      host="34.201.251.248",
       port="5432",
       keepalives=1,
       keepalives_idle=30,
@@ -262,17 +262,11 @@ def load_threadpool(list_of_stock_paths, batch_size, worker_number):
   load_dataframe.loc[len(load_dataframe)] = [worker_number, batch_size, total_metrics, total_metrics/run_time, total_rows/run_time, total_rows]
 
 
-
- 
-
-
-
-
 # 1. Simple aggregate max for a stock, every week for 1 month
 agg_max_stock_week_one_month = """
   select time_bucket('7 day', time) as bucket, max(close),symbol
   from {}
-  where time > now() - Interval '1 month' and symbol = '{}'
+  where (time >= '2014-01-01') and (time < '2014-02-01') and symbol = '{}'
   group by bucket, symbol
   order by bucket, symbol
   """.format(table,single_stock)
@@ -281,7 +275,7 @@ agg_max_stock_week_one_month = """
 agg_max_stock_week_one_year = """
   select time_bucket('7 day', time) as bucket, max(close),symbol
   from {}
-  where time > now() - Interval '1 year' and symbol = '{}'
+  where  (time >= '2014-01-01') and (time < '2015-01-01') and symbol = '{}'
   group by bucket, symbol
   order by bucket, symbol
   """.format(table,single_stock)
@@ -290,7 +284,7 @@ agg_max_stock_week_one_year = """
 agg_max_stock_week_five_one_month = """
   select time_bucket('7 day', time) as bucket, max(close),symbol
   from {}
-  where time > now() - Interval '1 month' and symbol IN {}
+  where (time >= '2014-01-01') and (time < '2014-02-01') and symbol IN {}
   group by bucket, symbol
   order by bucket, symbol
   """.format(table, five_stocks)
@@ -299,7 +293,7 @@ agg_max_stock_week_five_one_month = """
 agg_max_stock_week_five_one_year = """
   select time_bucket('7 day', time) as bucket, max(close),symbol
   from {}
-  where time > now() - Interval '1 year' and symbol IN {}
+  where (time >= '2014-01-01') and (time < '2015-01-01') and symbol IN {}
   group by bucket, symbol
   order by bucket, symbol
   """.format(table, five_stocks)
@@ -318,7 +312,7 @@ order by bucket, symbol
 agg_avg_stock_week_one_month = """
 select time_bucket('7 day', time) as bucket, avg(close),symbol
 from {}
-where time > now() - Interval '1 month' and symbol = '{}'
+where (time >= '2014-01-01') and (time < '2014-02-01') and symbol = '{}'
 group by bucket, symbol
 order by bucket, symbol
 """.format(table,single_stock)
@@ -327,16 +321,13 @@ order by bucket, symbol
 agg_avg_stock_week_all_one_month = """
 select time_bucket('7 day', time) as bucket, avg(close),symbol
 from {}
-where time > now() - Interval '1 month'
+where (time >= '2014-01-01') and (time < '2014-02-01')
 group by bucket, symbol
 order by bucket, symbol
 """.format(table)
 
 
-
-
 # price greater than the ten day moving average
-
 workload_three_query = """
 WITH ten_day_moving_average AS (
     SELECT time, AVG(close) OVER(ORDER BY time
@@ -550,90 +541,95 @@ if __name__ == "__main__":
   num_workers = [1,5,10,20]
   # load_size = [10000]
   # num_workers = [5]
+  try:
 
-  for eachLoadSize in load_size:
-    for eachWorkerSize in num_workers:
-      # drop table before start
-      drop_tables('{}'.format(table))
-      #create table
-      cursor = conn.cursor()
-      create_tables(cursor)
-      conn.commit()
-      # test load
-      load_threadpool(stock_paths,eachLoadSize,eachWorkerSize)
-   
-  print("======== Workload 2 ======== \n")
-  # Workload 2: Each thread or client executes the same query 
-
-
-  for i in range(1,5):
-    print("+++======== {} Worker ========+++ \n".format(i))
-
-    print("==== Query 1 ==== \n")
-    run_query(agg_max_stock_week_one_month,i,2,1)
-    print(' ')
-
-    print("==== Query 2 ==== \n")
-    run_query(agg_max_stock_week_one_year,i,2,2)
-    print(' ')
-
-    print("==== Query 3 ==== \n")
-    run_query(agg_max_stock_week_five_one_month,i,2,3)
-    print(' ')
-
-    print("==== Query 4 ==== \n")
-    run_query(agg_max_stock_week_five_one_year,i,2,4)
-    print(' ')
-
-    print("==== Query 5 ==== \n")
-    run_query(agg_max_stock_week_all_one_year ,i,2,5)
-    print(' ')
-
-    print("==== Query 6 ==== \n")
-    run_query(agg_avg_stock_week_one_month,i,2,6)
-    print(' ')
-
-    print("==== Query 7 ==== \n")
-    run_query(agg_avg_stock_week_all_one_month,i,2,7)
-    print(' ')
+    for eachLoadSize in load_size:
+      for eachWorkerSize in num_workers:
+        # drop table before start
+        drop_tables('{}'.format(table))
+        #create table
+        cursor = conn.cursor()
+        create_tables(cursor)
+        conn.commit()
+        # test load
+        load_threadpool(stock_paths,eachLoadSize,eachWorkerSize)
     
+    print("======== Workload 2 ======== \n")
+    # Workload 2: Each thread or client executes the same query 
 
-
-  print("==== Workload 3 ====")
-  for i in range(1,5):
-    print("+++======== {} Worker ========+++ \n".format(i))
-    run_query(workload_three_query, i, 3, 1)
-    
-    
-  print("==== Workload 4 ==== \n")
-
-  # test query with 1000, 5000, 100000 data points
-  # 1000 / len(stocks_path) = rows per stock added to the table
-
-  num_data_points_list = [1000,5000,10000]
-  for each in num_data_points_list:
-    print("==== TEST {} DATA POINTS ==== \n".format(each))
-
-    drop_tables('{}'.format(table))
-    # # create table if not exist
-    cursor = conn.cursor()
-    create_tables(cursor)
-    conn.commit()
-    get_consecutive_days(stock_paths, each)
-    cursor.execute(query_total_records)
-    total_records_count = int(cursor.fetchall()[0][0])
-    print("Loaded: Total Data Points: " + str(total_records_count))
 
     for i in range(1,5):
       print("+++======== {} Worker ========+++ \n".format(i))
-      run_query(workload_four_query, i, 4, 1)
-      # break
-  
-  # close connection
-  conn.close()
 
-  # export global dataframe to csv 
-  global_dataframe.to_csv('timescaleDB_queryStats.csv', index=False)
-  load_dataframe.to_csv('timescaleDB_loadStats.csv', index=False)
+      print("==== Query 1 ==== \n")
+      run_query(agg_max_stock_week_one_month,i,2,1)
+      print(' ')
 
+      print("==== Query 2 ==== \n")
+      run_query(agg_max_stock_week_one_year,i,2,2)
+      print(' ')
+
+      print("==== Query 3 ==== \n")
+      run_query(agg_max_stock_week_five_one_month,i,2,3)
+      print(' ')
+
+      print("==== Query 4 ==== \n")
+      run_query(agg_max_stock_week_five_one_year,i,2,4)
+      print(' ')
+
+      print("==== Query 5 ==== \n")
+      run_query(agg_max_stock_week_all_one_year ,i,2,5)
+      print(' ')
+
+      print("==== Query 6 ==== \n")
+      run_query(agg_avg_stock_week_one_month,i,2,6)
+      print(' ')
+
+      print("==== Query 7 ==== \n")
+      run_query(agg_avg_stock_week_all_one_month,i,2,7)
+      print(' ')
+      
+
+
+    print("==== Workload 3 ====")
+    for i in range(1,5):
+      print("+++======== {} Worker ========+++ \n".format(i))
+      run_query(workload_three_query, i, 3, 1)
+      
+      
+    print("==== Workload 4 ==== \n")
+
+    # test query with 1000, 5000, 100000 data points
+    # 1000 / len(stocks_path) = rows per stock added to the table
+
+    num_data_points_list = [1000,5000,10000]
+    for each in num_data_points_list:
+      print("==== TEST {} DATA POINTS ==== \n".format(each))
+
+      drop_tables('{}'.format(table))
+      # # create table if not exist
+      cursor = conn.cursor()
+      create_tables(cursor)
+      conn.commit()
+      get_consecutive_days(stock_paths, each)
+      cursor.execute(query_total_records)
+      total_records_count = int(cursor.fetchall()[0][0])
+      print("Loaded: Total Data Points: " + str(total_records_count))
+
+      for i in range(1,5):
+        print("+++======== {} Worker ========+++ \n".format(i))
+        run_query(workload_four_query, i, 4, 1)
+        # break
+    
+    # close connection
+    conn.close()
+
+    # export global dataframe to csv 
+    global_dataframe.to_csv('timescaleDB_queryStats.csv', index=False)
+    load_dataframe.to_csv('timescaleDB_loadStats.csv', index=False)
+  except KeyboardInterrupt:
+      try:
+              sys.exit(0)
+      except SystemExit:
+              os._exit(0)
 
