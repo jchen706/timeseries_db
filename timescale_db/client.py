@@ -136,7 +136,7 @@ def connect():
     tcp = ThreadedConnectionPool(1, 10, dbname="postgres",
       user="postgres",
       password="123",
-      host="localhost",
+      host="3.83.121.47",
       port="5432",
       keepalives=1,
       keepalives_idle=30,
@@ -372,10 +372,13 @@ ORDER BY time DESC
 workload_four_query = """
 select d.time, d.close, d.change_of_price, d.symbol
 from  (
-SELECT time, close, close - LAG(close, 1, close) OVER(ORDER BY time)
-AS change_of_price, symbol
-FROM {}
-ORDER BY time desc
+SELECT t.time, t.close, t.close - LAG(t.close, 1, t.close) OVER(partition  by t.symbol ORDER BY t.symbol)
+AS change_of_price, t.symbol
+FROM (
+select symbol, time, close 
+from stocks 
+order by symbol, time asc) 
+as t 
 ) as d 
 where change_of_price > 0
 order by d.time desc
@@ -543,18 +546,20 @@ if __name__ == "__main__":
   # # Try Drop Table Before Start
   # drop_tables('{}'.format(table))
 
-  # # # create table if not exist
+  # # # # create table if not exist
   # cursor = conn.cursor()
   # create_tables(cursor)
   # conn.commit()
   
-  # # Load Data into Table using Threadpool with batch size and 4
+  # # # Load Data into Table using Threadpool with batch size and 4
+  # load_threadpool(stock_paths,0,4,1)
+
   # 
   print("======== Workload 1 ======== \n")
-  # load_size = [1000,5000,10000]
-  # num_workers = [1,5,10,20]
-  load_size = [10000]
-  num_workers = [5]
+  load_size = [1000,5000,10000]
+  num_workers = [1,5,10,20]
+  # load_size = [10000]
+  # num_workers = [5]
   try:
 
 
@@ -585,8 +590,6 @@ if __name__ == "__main__":
           # test load
           load_threadpool(each,0,eachWorkerSize,i)
 
-
-  
     # for eachLoadSize in load_size:
     #   for eachWorkerSize in num_workers:
     #     # drop table before start
@@ -602,36 +605,36 @@ if __name__ == "__main__":
     # Workload 2: Each thread or client executes the same query 
 
 
-    for i in range(1,5):
-      print("+++======== {} Worker ========+++ \n".format(i))
+    # for i in range(1,5):
+    #   print("+++======== {} Worker ========+++ \n".format(i))
 
-      print("==== Query 1 ==== \n")
-      run_query(agg_max_stock_week_one_month,i,2,1)
-      print(' ')
+    #   print("==== Query 1 ==== \n")
+    #   run_query(agg_max_stock_week_one_month,i,2,1)
+    #   print(' ')
 
-      print("==== Query 2 ==== \n")
-      run_query(agg_max_stock_week_one_year,i,2,2)
-      print(' ')
+    #   print("==== Query 2 ==== \n")
+    #   run_query(agg_max_stock_week_one_year,i,2,2)
+    #   print(' ')
 
-      print("==== Query 3 ==== \n")
-      run_query(agg_max_stock_week_five_one_month,i,2,3)
-      print(' ')
+    #   print("==== Query 3 ==== \n")
+    #   run_query(agg_max_stock_week_five_one_month,i,2,3)
+    #   print(' ')
 
-      print("==== Query 4 ==== \n")
-      run_query(agg_max_stock_week_five_one_year,i,2,4)
-      print(' ')
+    #   print("==== Query 4 ==== \n")
+    #   run_query(agg_max_stock_week_five_one_year,i,2,4)
+    #   print(' ')
 
-      print("==== Query 5 ==== \n")
-      run_query(agg_max_stock_week_all_one_year ,i,2,5)
-      print(' ')
+    #   print("==== Query 5 ==== \n")
+    #   run_query(agg_max_stock_week_all_one_year ,i,2,5)
+    #   print(' ')
 
-      print("==== Query 6 ==== \n")
-      run_query(agg_avg_stock_week_one_month,i,2,6)
-      print(' ')
+    #   print("==== Query 6 ==== \n")
+    #   run_query(agg_avg_stock_week_one_month,i,2,6)
+    #   print(' ')
 
-      print("==== Query 7 ==== \n")
-      run_query(agg_avg_stock_week_all_one_month,i,2,7)
-      print(' ')
+    #   print("==== Query 7 ==== \n")
+    #   run_query(agg_avg_stock_week_all_one_month,i,2,7)
+    #   print(' ')
       
 
 
