@@ -578,17 +578,17 @@ if __name__ == "__main__":
 
     # s = [['../stock_data/ALLE.csv']]
 
-    for i in range(1,6):
-      for each in s:
-        for eachWorkerSize in num_workers:
-          # drop table before start
-          drop_tables('{}'.format(table))
-          #create table
-          cursor = conn.cursor()
-          create_tables(cursor)
-          conn.commit()
-          # test load
-          load_threadpool(each,0,eachWorkerSize,i)
+    # for i in range(1,6):
+    #   for each in s:
+    #     for eachWorkerSize in num_workers:
+    #       # drop table before start
+    #       drop_tables('{}'.format(table))
+    #       #create table
+    #       cursor = conn.cursor()
+    #       create_tables(cursor)
+    #       conn.commit()
+    #       # test load
+    #       load_threadpool(each,0,eachWorkerSize,i)
 
     # for eachLoadSize in load_size:
     #   for eachWorkerSize in num_workers:
@@ -639,9 +639,9 @@ if __name__ == "__main__":
 
 
     # print("==== Workload 3 ====")
-    # for i in range(1,5):
-    #   print("+++======== {} Worker ========+++ \n".format(i))
-    #   run_query(workload_three_query, i, 3, 1)
+    for i in range(1,5):
+      print("+++======== {} Worker ========+++ \n".format(i))
+      run_query(workload_three_query, i, 3, 1)
       
       
     # print("==== Workload 4 ==== \n")
@@ -672,8 +672,8 @@ if __name__ == "__main__":
     # conn.close()
 
     # # export global dataframe to csv 
-    # global_dataframe.to_csv('timescaleDB_queryStats.csv', index=False)
-    load_dataframe.to_csv('timescaleDB_loadStats.csv', index=False)
+    global_dataframe.to_csv('timescaleDB_queryStats.csv', index=False)
+    # load_dataframe.to_csv('timescaleDB_loadStats.csv', index=False)
   except KeyboardInterrupt:
       try:
               sys.exit(0)
