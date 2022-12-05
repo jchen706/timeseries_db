@@ -578,17 +578,17 @@ if __name__ == "__main__":
 
     # s = [['../stock_data/ALLE.csv']]
 
-    for i in range(1,6):
-      for each in s:
-        for eachWorkerSize in num_workers:
-          # drop table before start
-          drop_tables('{}'.format(table))
-          #create table
-          cursor = conn.cursor()
-          create_tables(cursor)
-          conn.commit()
-          # test load
-          load_threadpool(each,0,eachWorkerSize,i)
+    # for i in range(1,6):
+    #   for each in s:
+    #     for eachWorkerSize in num_workers:
+    #       # drop table before start
+    #       drop_tables('{}'.format(table))
+    #       #create table
+    #       cursor = conn.cursor()
+    #       create_tables(cursor)
+    #       conn.commit()
+    #       # test load
+    #       load_threadpool(each,0,eachWorkerSize,i)
 
     # for eachLoadSize in load_size:
     #   for eachWorkerSize in num_workers:
@@ -605,36 +605,36 @@ if __name__ == "__main__":
     # Workload 2: Each thread or client executes the same query 
 
 
-    # for i in range(1,5):
-    #   print("+++======== {} Worker ========+++ \n".format(i))
+    for i in range(1,5):
+      print("+++======== {} Worker ========+++ \n".format(i))
 
-    #   print("==== Query 1 ==== \n")
-    #   run_query(agg_max_stock_week_one_month,i,2,1)
-    #   print(' ')
+      print("==== Query 1 ==== \n")
+      run_query(agg_max_stock_week_one_month,i,2,1)
+      print(' ')
 
-    #   print("==== Query 2 ==== \n")
-    #   run_query(agg_max_stock_week_one_year,i,2,2)
-    #   print(' ')
+      print("==== Query 2 ==== \n")
+      run_query(agg_max_stock_week_one_year,i,2,2)
+      print(' ')
 
-    #   print("==== Query 3 ==== \n")
-    #   run_query(agg_max_stock_week_five_one_month,i,2,3)
-    #   print(' ')
+      print("==== Query 3 ==== \n")
+      run_query(agg_max_stock_week_five_one_month,i,2,3)
+      print(' ')
 
-    #   print("==== Query 4 ==== \n")
-    #   run_query(agg_max_stock_week_five_one_year,i,2,4)
-    #   print(' ')
+      print("==== Query 4 ==== \n")
+      run_query(agg_max_stock_week_five_one_year,i,2,4)
+      print(' ')
 
-    #   print("==== Query 5 ==== \n")
-    #   run_query(agg_max_stock_week_all_one_year ,i,2,5)
-    #   print(' ')
+      print("==== Query 5 ==== \n")
+      run_query(agg_max_stock_week_all_one_year ,i,2,5)
+      print(' ')
 
-    #   print("==== Query 6 ==== \n")
-    #   run_query(agg_avg_stock_week_one_month,i,2,6)
-    #   print(' ')
+      print("==== Query 6 ==== \n")
+      run_query(agg_avg_stock_week_one_month,i,2,6)
+      print(' ')
 
-    #   print("==== Query 7 ==== \n")
-    #   run_query(agg_avg_stock_week_all_one_month,i,2,7)
-    #   print(' ')
+      print("==== Query 7 ==== \n")
+      run_query(agg_avg_stock_week_all_one_month,i,2,7)
+      print(' ')
       
 
 
@@ -672,8 +672,8 @@ if __name__ == "__main__":
     # conn.close()
 
     # # export global dataframe to csv 
-    # global_dataframe.to_csv('timescaleDB_queryStats.csv', index=False)
-    load_dataframe.to_csv('timescaleDB_loadStats.csv', index=False)
+    global_dataframe.to_csv('timescaleDB_queryStats.csv', index=False)
+    # load_dataframe.to_csv('timescaleDB_loadStats.csv', index=False)
   except KeyboardInterrupt:
       try:
               sys.exit(0)
