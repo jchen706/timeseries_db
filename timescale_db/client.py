@@ -244,7 +244,7 @@ def load_threadpool(list_of_stock_paths, batch_size, worker_number, attempt):
   print(len(df))
 
   if (batch_size==0):
-    batch_size = len(df)
+    batch_size = len(df) // worker_number
 
   itemBank = list(zip(*map(df.get, df)))
   total_rows = len(itemBank)
@@ -592,16 +592,16 @@ if __name__ == "__main__":
     #       # test load
     #       load_threadpool(each,0,eachWorkerSize,i)
 
-    # for eachLoadSize in load_size:
-    #   for eachWorkerSize in num_workers:
-    #     # drop table before start
-    #     drop_tables('{}'.format(table))
-    #     #create table
-    #     cursor = conn.cursor()
-    #     create_tables(cursor)
-    #     conn.commit()
-    #     # test load
-    #     load_threadpool(stock_paths,eachLoadSize,eachWorkerSize)
+    for eachLoadSize in load_size:
+      for eachWorkerSize in num_workers:
+        # drop table before start
+        drop_tables('{}'.format(table))
+        #create table
+        cursor = conn.cursor()
+        create_tables(cursor)
+        conn.commit()
+        # test load
+        load_threadpool(stock_paths,eachLoadSize,eachWorkerSize, 1)
     
     # print("======== Workload 2 ======== \n")
     # Workload 2: Each thread or client executes the same query 
@@ -646,36 +646,36 @@ if __name__ == "__main__":
     #   run_query(workload_three_query, i, 3, 1,1)
       
       
-    print("==== Workload 4 ==== \n")
+    # print("==== Workload 4 ==== \n")
 
-    # # test query with 1000, 5000, 100000 data points
-    # # 1000 / len(stocks_path) = rows per stock added to the table
+    # # # test query with 1000, 5000, 100000 data points
+    # # # 1000 / len(stocks_path) = rows per stock added to the table
 
-    num_data_points_list = [1000,5000,10000]
-    for each in num_data_points_list:
-      print("==== TEST {} DATA POINTS ==== \n".format(each))
+    # num_data_points_list = [1000,5000,10000]
+    # for each in num_data_points_list:
+    #   print("==== TEST {} DATA POINTS ==== \n".format(each))
 
-      drop_tables('{}'.format(table))
-      # # create table if not exist
-      cursor = conn.cursor()
-      create_tables(cursor)
-      conn.commit()
-      get_consecutive_days(stock_paths, each)
-      cursor.execute(query_total_records)
-      total_records_count = int(cursor.fetchall()[0][0])
-      print("Loaded: Total Data Points: " + str(total_records_count))
+    #   drop_tables('{}'.format(table))
+    #   # # create table if not exist
+    #   cursor = conn.cursor()
+    #   create_tables(cursor)
+    #   conn.commit()
+    #   get_consecutive_days(stock_paths, each)
+    #   cursor.execute(query_total_records)
+    #   total_records_count = int(cursor.fetchall()[0][0])
+    #   print("Loaded: Total Data Points: " + str(total_records_count))
       
-      for i in range(1,5):
-        print("+++======== {} Worker ========+++ \n".format(i))
-        run_query(workload_four_query, i, 4, 1, 1)
+    #   for i in range(1,5):
+    #     print("+++======== {} Worker ========+++ \n".format(i))
+    #     run_query(workload_four_query, i, 4, 1)
         # break
     
     # # close connection
     conn.close()
 
     # # export global dataframe to csv 
-    global_dataframe.to_csv('timescaleDB_queryStats.csv', index=False)
-    # load_dataframe.to_csv('timescaleDB_loadStats.csv', index=False)
+    # global_dataframe.to_csv('timescaleDB_queryStats.csv', index=False)
+    load_dataframe.to_csv('timescaleDB_loadStats.csv', index=False)
   except KeyboardInterrupt:
       try:
               sys.exit(0)
