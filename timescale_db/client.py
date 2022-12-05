@@ -605,43 +605,43 @@ if __name__ == "__main__":
     # Workload 2: Each thread or client executes the same query 
 
 
-    for i in range(1,5):
-      print("+++======== {} Worker ========+++ \n".format(i))
+    # for i in range(1,5):
+    #   print("+++======== {} Worker ========+++ \n".format(i))
 
-      print("==== Query 1 ==== \n")
-      run_query(agg_max_stock_week_one_month,i,2,1)
-      print(' ')
+    #   print("==== Query 1 ==== \n")
+    #   run_query(agg_max_stock_week_one_month,i,2,1)
+    #   print(' ')
 
-      print("==== Query 2 ==== \n")
-      run_query(agg_max_stock_week_one_year,i,2,2)
-      print(' ')
+    #   print("==== Query 2 ==== \n")
+    #   run_query(agg_max_stock_week_one_year,i,2,2)
+    #   print(' ')
 
-      print("==== Query 3 ==== \n")
-      run_query(agg_max_stock_week_five_one_month,i,2,3)
-      print(' ')
+    #   print("==== Query 3 ==== \n")
+    #   run_query(agg_max_stock_week_five_one_month,i,2,3)
+    #   print(' ')
 
-      print("==== Query 4 ==== \n")
-      run_query(agg_max_stock_week_five_one_year,i,2,4)
-      print(' ')
+    #   print("==== Query 4 ==== \n")
+    #   run_query(agg_max_stock_week_five_one_year,i,2,4)
+    #   print(' ')
 
-      print("==== Query 5 ==== \n")
-      run_query(agg_max_stock_week_all_one_year ,i,2,5)
-      print(' ')
+    #   print("==== Query 5 ==== \n")
+    #   run_query(agg_max_stock_week_all_one_year ,i,2,5)
+    #   print(' ')
 
-      print("==== Query 6 ==== \n")
-      run_query(agg_avg_stock_week_one_month,i,2,6)
-      print(' ')
+    #   print("==== Query 6 ==== \n")
+    #   run_query(agg_avg_stock_week_one_month,i,2,6)
+    #   print(' ')
 
-      print("==== Query 7 ==== \n")
-      run_query(agg_avg_stock_week_all_one_month,i,2,7)
-      print(' ')
+    #   print("==== Query 7 ==== \n")
+    #   run_query(agg_avg_stock_week_all_one_month,i,2,7)
+    #   print(' ')
       
 
 
     # print("==== Workload 3 ====")
-    # for i in range(1,5):
-    #   print("+++======== {} Worker ========+++ \n".format(i))
-    #   run_query(workload_three_query, i, 3, 1)
+    for i in range(1,5):
+      print("+++======== {} Worker ========+++ \n".format(i))
+      run_query(workload_three_query, i, 3, 1)
       
       
     # print("==== Workload 4 ==== \n")
