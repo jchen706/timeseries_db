@@ -132,11 +132,13 @@ def connect():
     #   )
 
     # 34.201.251.248
+    # 54.221.23.28
+    # 54.221.23.28
     # threadpool connection
     tcp = ThreadedConnectionPool(1, 10, dbname="postgres",
       user="postgres",
       password="123",
-      host="3.83.121.47",
+      host="54.221.23.28",
       port="5432",
       keepalives=1,
       keepalives_idle=30,
@@ -255,7 +257,7 @@ def load_threadpool(list_of_stock_paths, batch_size, worker_number, attempt):
   with concurrent.futures.ThreadPoolExecutor(max_workers=worker_number) as executor:
       for i in range(0,len(df), batch_size):
           # 5 item at a time
-          print(i,i+batch_size)
+          # print(i,i+batch_size)
           if (i+batch_size > len(df)):
             futures.append(executor.submit(inject_thread,rowlist=itemBank[i:len(df)],conn=conn))
           else:
@@ -391,8 +393,8 @@ def thread_helper(query):
   global conn
   cursor = conn.cursor() 
   cursor.execute(query) 
-  conn.commit()
-  result = cursor.fetchall()
+  #conn.commit()
+  #result = cursor.fetchall()
   # print(result)
 
   
@@ -412,7 +414,7 @@ def run_query(query, num_workers, workload_num, query_num, attempts = 5):
         # print(query)
         start = time.time()
         cursor.execute(query)
-        result = cursor.fetchall()
+        #result = cursor.fetchall()
         # print(result[0])
         end = time.time()
         latencies.append(end - start)
@@ -544,23 +546,23 @@ if __name__ == "__main__":
   connect()
 
   # # Try Drop Table Before Start
-  # drop_tables('{}'.format(table))
+  drop_tables('{}'.format(table))
 
-  # # # # create table if not exist
-  # cursor = conn.cursor()
-  # create_tables(cursor)
-  # conn.commit()
-  
-  # # # Load Data into Table using Threadpool with batch size and 4
-  # load_threadpool(stock_paths,0,4,1)
-
-  # 
-  print("======== Workload 1 ======== \n")
-  load_size = [1000,5000,10000]
-  num_workers = [1,5,10,20]
-  # load_size = [10000]
-  # num_workers = [5]
+  # # # create table if not exist
+  cursor = conn.cursor()
+  create_tables(cursor)
+  conn.commit()
   try:
+    # # Load Data into Table using Threadpool with batch size and 4
+    load_threadpool(stock_paths,70000,4,1)
+
+    # 
+    print("======== Workload 1 ======== \n")
+    load_size = [1000,5000,10000]
+    num_workers = [1,5,10,20]
+    # load_size = [10000]
+    # num_workers = [5]
+  
 
 
     # 1 stock
@@ -601,7 +603,7 @@ if __name__ == "__main__":
     #     # test load
     #     load_threadpool(stock_paths,eachLoadSize,eachWorkerSize)
     
-    print("======== Workload 2 ======== \n")
+    # print("======== Workload 2 ======== \n")
     # Workload 2: Each thread or client executes the same query 
 
 
@@ -638,8 +640,8 @@ if __name__ == "__main__":
       
 
 
-    # print("==== Workload 3 ====")
-    for i in range(1,5):
+    print("==== Workload 3 ====")
+    for i in range(1,2):
       print("+++======== {} Worker ========+++ \n".format(i))
       run_query(workload_three_query, i, 3, 1)
       
@@ -669,7 +671,7 @@ if __name__ == "__main__":
     #     # break
     
     # # close connection
-    # conn.close()
+    conn.close()
 
     # # export global dataframe to csv 
     global_dataframe.to_csv('timescaleDB_queryStats.csv', index=False)
