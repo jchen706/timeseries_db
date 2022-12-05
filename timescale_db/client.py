@@ -546,15 +546,15 @@ if __name__ == "__main__":
   connect()
 
   # # Try Drop Table Before Start
-  drop_tables('{}'.format(table))
+  # drop_tables('{}'.format(table))
 
-  # # # create table if not exist
-  cursor = conn.cursor()
-  create_tables(cursor)
-  conn.commit()
+  # # # # create table if not exist
+  # cursor = conn.cursor()
+  # create_tables(cursor)
+  # conn.commit()
   try:
     # # Load Data into Table using Threadpool with batch size and 4
-    load_threadpool(stock_paths,70000,4,1)
+    #load_threadpool(stock_paths,70000,4,1)
 
     # 
     print("======== Workload 1 ======== \n")
@@ -640,35 +640,35 @@ if __name__ == "__main__":
       
 
 
-    print("==== Workload 3 ====")
-    for i in range(1,2):
-      print("+++======== {} Worker ========+++ \n".format(i))
-      run_query(workload_three_query, i, 3, 1)
+    # print("==== Workload 3 ====")
+    # for i in range(1,5):
+    #   print("+++======== {} Worker ========+++ \n".format(i))
+    #   run_query(workload_three_query, i, 3, 1,1)
       
       
-    # print("==== Workload 4 ==== \n")
+    print("==== Workload 4 ==== \n")
 
     # # test query with 1000, 5000, 100000 data points
     # # 1000 / len(stocks_path) = rows per stock added to the table
 
-    # num_data_points_list = [1000,5000,10000]
-    # for each in num_data_points_list:
-    #   print("==== TEST {} DATA POINTS ==== \n".format(each))
+    num_data_points_list = [1000,5000,10000]
+    for each in num_data_points_list:
+      print("==== TEST {} DATA POINTS ==== \n".format(each))
 
-    #   drop_tables('{}'.format(table))
-    #   # # create table if not exist
-    #   cursor = conn.cursor()
-    #   create_tables(cursor)
-    #   conn.commit()
-    #   get_consecutive_days(stock_paths, each)
-    #   cursor.execute(query_total_records)
-    #   total_records_count = int(cursor.fetchall()[0][0])
-    #   print("Loaded: Total Data Points: " + str(total_records_count))
-
-    #   for i in range(1,5):
-    #     print("+++======== {} Worker ========+++ \n".format(i))
-    #     run_query(workload_four_query, i, 4, 1)
-    #     # break
+      drop_tables('{}'.format(table))
+      # # create table if not exist
+      cursor = conn.cursor()
+      create_tables(cursor)
+      conn.commit()
+      get_consecutive_days(stock_paths, each)
+      cursor.execute(query_total_records)
+      total_records_count = int(cursor.fetchall()[0][0])
+      print("Loaded: Total Data Points: " + str(total_records_count))
+      
+      for i in range(1,5):
+        print("+++======== {} Worker ========+++ \n".format(i))
+        run_query(workload_four_query, i, 4, 1, 1)
+        # break
     
     # # close connection
     conn.close()
