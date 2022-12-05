@@ -139,7 +139,7 @@ def connect():
     tcp = ThreadedConnectionPool(1, 25, dbname="postgres",
       user="postgres",
       password="123",
-      host="localhost",
+      host="18.204.21.200",
       port="5432",
       keepalives=1,
       keepalives_idle=30,
@@ -564,15 +564,15 @@ if __name__ == "__main__":
   connect()
 
   # # Try Drop Table Before Start
-  drop_tables('{}'.format(table))
+  # drop_tables('{}'.format(table))
 
-  # # # create table if not exist
-  cursor = conn.cursor()
-  create_tables(cursor)
-  conn.commit()
+  # # # # create table if not exist
+  # cursor = conn.cursor()
+  # create_tables(cursor)
+  # conn.commit()
   try:
     # # Load Data into Table using Threadpool with batch size and 4
-    load_threadpool(stock_paths,70000,4,1)
+    # load_threadpool(stock_paths,70000,4,1)
 
     # 
     print("======== Workload 1 ======== \n")
@@ -599,28 +599,28 @@ if __name__ == "__main__":
 
     # s = [['../stock_data/ALLE.csv']]
 
-    # for i in range(1,6):
-    #   for each in s:
-    #     for eachWorkerSize in num_workers:
-    #       # drop table before start
-    #       drop_tables('{}'.format(table))
-    #       #create table
-    #       cursor = conn.cursor()
-    #       create_tables(cursor)
-    #       conn.commit()
-    #       # test load
-    #       load_threadpool(each,0,eachWorkerSize,i,1)
+    for i in range(1,6):
+      for each in s:
+        for eachWorkerSize in num_workers:
+          # drop table before start
+          drop_tables('{}'.format(table))
+          #create table
+          cursor = conn.cursor()
+          create_tables(cursor)
+          conn.commit()
+          # test load
+          load_threadpool(each,0,eachWorkerSize,1)
 
-    for eachLoadSize in load_size:
-      for eachWorkerSize in num_workers:
-        # drop table before start
-        drop_tables('{}'.format(table))
-        #create table
-        cursor = conn.cursor()
-        create_tables(cursor)
-        conn.commit()
-        # test load
-        load_threadpool(stock_paths,eachLoadSize,eachWorkerSize, 1)
+    # for eachLoadSize in load_size:
+    #   for eachWorkerSize in num_workers:
+    #     # drop table before start
+    #     drop_tables('{}'.format(table))
+    #     #create table
+    #     cursor = conn.cursor()
+    #     create_tables(cursor)
+    #     conn.commit()
+    #     # test load
+    #     load_threadpool(stock_paths,eachLoadSize,eachWorkerSize, 1)
     
     # print("======== Workload 2 ======== \n")
     # Workload 2: Each thread or client executes the same query 
