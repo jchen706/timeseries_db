@@ -6,7 +6,7 @@ import atexit
 from datetime import datetime
 from glob import glob
 from sqlite3 import Timestamp
-from turtle import back
+#from turtle import back
 from typing_extensions import runtime
 from unittest import result
 import psycopg2
@@ -569,11 +569,11 @@ if __name__ == "__main__":
     
 
     s = [['../stock_data/ALLE.csv'], [
-      '../stock_csv/A.csv',
-      '../stock_csv/ALLE.csv',
-      '../stock_csv/AAL.csv',
-      '../stock_csv/AAP.csv',
-      '../stock_csv/ABBV.csv'
+      '../stock_data/A.csv',
+      '../stock_data/ALLE.csv',
+      '../stock_data/AAL.csv',
+      '../stock_data/AAP.csv',
+      '../stock_data/ABBV.csv'
     ], stock_paths]
 
     # s = [['../stock_data/ALLE.csv']]
