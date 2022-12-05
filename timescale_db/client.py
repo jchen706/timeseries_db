@@ -135,10 +135,11 @@ def connect():
     # 54.221.23.28
     # 54.221.23.28
     # threadpool connection
+    # 18.204.21.200
     tcp = ThreadedConnectionPool(1, 10, dbname="postgres",
       user="postgres",
       password="123",
-      host="54.221.23.28",
+      host="18.204.21.200",
       port="5432",
       keepalives=1,
       keepalives_idle=30,
@@ -580,28 +581,28 @@ if __name__ == "__main__":
 
     # s = [['../stock_data/ALLE.csv']]
 
-    # for i in range(1,6):
-    #   for each in s:
-    #     for eachWorkerSize in num_workers:
-    #       # drop table before start
-    #       drop_tables('{}'.format(table))
-    #       #create table
-    #       cursor = conn.cursor()
-    #       create_tables(cursor)
-    #       conn.commit()
-    #       # test load
-    #       load_threadpool(each,0,eachWorkerSize,i)
+    for i in range(1,6):
+      for each in s:
+        for eachWorkerSize in num_workers:
+          # drop table before start
+          drop_tables('{}'.format(table))
+          #create table
+          cursor = conn.cursor()
+          create_tables(cursor)
+          conn.commit()
+          # test load
+          load_threadpool(each,0,eachWorkerSize,i,1)
 
-    for eachLoadSize in load_size:
-      for eachWorkerSize in num_workers:
-        # drop table before start
-        drop_tables('{}'.format(table))
-        #create table
-        cursor = conn.cursor()
-        create_tables(cursor)
-        conn.commit()
-        # test load
-        load_threadpool(stock_paths,eachLoadSize,eachWorkerSize, 1)
+    # for eachLoadSize in load_size:
+    #   for eachWorkerSize in num_workers:
+    #     # drop table before start
+    #     drop_tables('{}'.format(table))
+    #     #create table
+    #     cursor = conn.cursor()
+    #     create_tables(cursor)
+    #     conn.commit()
+    #     # test load
+    #     load_threadpool(stock_paths,eachLoadSize,eachWorkerSize, 1)
     
     # print("======== Workload 2 ======== \n")
     # Workload 2: Each thread or client executes the same query 
