@@ -136,10 +136,10 @@ def connect():
     # 54.221.23.28
     # threadpool connection
     # 18.204.21.200
-    tcp = ThreadedConnectionPool(1, 10, dbname="postgres",
+    tcp = ThreadedConnectionPool(1, 25, dbname="postgres",
       user="postgres",
       password="123",
-      host="18.204.21.200",
+      host="localhost",
       port="5432",
       keepalives=1,
       keepalives_idle=30,
@@ -349,11 +349,11 @@ order by bucket, symbol
 workload_three_query = """
 Select s.time, s.symbol
 from (
- SELECT time, AVG(close) OVER(ORDER BY time
+SELECT time, AVG(close) OVER(partition by symbol ORDER BY time
     ROWS BETWEEN 9 PRECEDING AND CURRENT ROW)
     AS ten_day_avg_close, symbol
   FROM stocks
-  ORDER BY time DESC
+  order by time desc
 ) as t, stocks as s
 where s.close - t.ten_day_avg_close > 0 and s.symbol = t.symbol and s.time = t.time
 order by s.time DESC
@@ -386,6 +386,23 @@ as t
 where change_of_price > 0
 order by d.time desc
 """.format(table)
+
+
+workload_four_query_neg = """
+select d.time, d.close, d.change_of_price, d.symbol
+from  (
+SELECT t.time, t.close, t.close - LAG(t.close, 1, t.close) OVER(partition  by t.symbol ORDER BY t.symbol)
+AS change_of_price, t.symbol
+FROM (
+select symbol, time, close 
+from stocks 
+order by symbol, time asc) 
+as t 
+) as d 
+where change_of_price < 0
+order by d.time desc
+""".format(table)
+
 
 
 query_total_records = "select count(*)  from {}".format(table)
@@ -547,15 +564,15 @@ if __name__ == "__main__":
   connect()
 
   # # Try Drop Table Before Start
-  # drop_tables('{}'.format(table))
+  drop_tables('{}'.format(table))
 
-  # # # # create table if not exist
-  # cursor = conn.cursor()
-  # create_tables(cursor)
-  # conn.commit()
+  # # # create table if not exist
+  cursor = conn.cursor()
+  create_tables(cursor)
+  conn.commit()
   try:
     # # Load Data into Table using Threadpool with batch size and 4
-    #load_threadpool(stock_paths,70000,4,1)
+    load_threadpool(stock_paths,70000,4,1)
 
     # 
     print("======== Workload 1 ======== \n")
@@ -569,6 +586,7 @@ if __name__ == "__main__":
     # 1 stock
     # 5 stock
     # 10 stock
+    # 2GB
     
 
     s = [['../stock_data/ALLE.csv'], [
@@ -581,28 +599,28 @@ if __name__ == "__main__":
 
     # s = [['../stock_data/ALLE.csv']]
 
-    for i in range(1,6):
-      for each in s:
-        for eachWorkerSize in num_workers:
-          # drop table before start
-          drop_tables('{}'.format(table))
-          #create table
-          cursor = conn.cursor()
-          create_tables(cursor)
-          conn.commit()
-          # test load
-          load_threadpool(each,0,eachWorkerSize,i,1)
+    # for i in range(1,6):
+    #   for each in s:
+    #     for eachWorkerSize in num_workers:
+    #       # drop table before start
+    #       drop_tables('{}'.format(table))
+    #       #create table
+    #       cursor = conn.cursor()
+    #       create_tables(cursor)
+    #       conn.commit()
+    #       # test load
+    #       load_threadpool(each,0,eachWorkerSize,i,1)
 
-    # for eachLoadSize in load_size:
-    #   for eachWorkerSize in num_workers:
-    #     # drop table before start
-    #     drop_tables('{}'.format(table))
-    #     #create table
-    #     cursor = conn.cursor()
-    #     create_tables(cursor)
-    #     conn.commit()
-    #     # test load
-    #     load_threadpool(stock_paths,eachLoadSize,eachWorkerSize, 1)
+    for eachLoadSize in load_size:
+      for eachWorkerSize in num_workers:
+        # drop table before start
+        drop_tables('{}'.format(table))
+        #create table
+        cursor = conn.cursor()
+        create_tables(cursor)
+        conn.commit()
+        # test load
+        load_threadpool(stock_paths,eachLoadSize,eachWorkerSize, 1)
     
     # print("======== Workload 2 ======== \n")
     # Workload 2: Each thread or client executes the same query 
