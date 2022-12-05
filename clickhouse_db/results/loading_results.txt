@@ -1,0 +1,85 @@
+--------- 1 STOCK -----------
+1 WORKER
+Rows written per second: 36920.17184378261
+Total rows written: 2269
+Values written per second: 295361.3747502609
+Total values written: 18152
+Time Elapsed: 0.49 sec
+
+5 WORKERS
+Rows written per second: 21801.517737071834
+Total rows written: 2265
+Values written per second: 174412.14189657467
+Total values written: 18152
+Time Elapsed: 0.83 sec
+
+10 WORKERS
+Rows written per second: 15116.681933582537
+Total rows written: 2260
+Values written per second: 120933.4554686603
+Total values written: 18152
+Time Elapsed: 1.2 sec
+
+20 WORKERS
+Rows written per second: 7720.8438323673245
+Total rows written: 2260
+Values written per second: 61766.750658938596
+Total values written: 18152
+Time Elapsed: 2.35 sec
+
+------------- 5 STOCKS ----------------
+1 WORKER
+Total rows written: 20151
+Values written per second: 327059.69268870295
+Total values written: 161208
+Total time elapsed: 0.4929008483886719
+
+5 WORKERS
+Rows written per second: 27297.829163816252
+Total rows written: 20150
+Values written per second: 218382.63331053001
+Total values written: 161200
+Total time elapsed: 0.7381539344787598
+
+10 WORKERS
+Rows written per second: 14086.845273464747
+Total rows written: 20150
+Values written per second: 112694.76218771798
+Total values written: 161200
+Total time elapsed: 1.4304125308990479
+
+20 WORKERS
+Rows written per second: 10739.025574592455
+Total rows written: 20140
+Values written per second: 85912.20459673964
+Total values written: 161120
+Total time elapsed: 1.8754029273986816
+
+------------- 10 STOCKS ---------------
+1 WORKER
+Rows written per second: 57051.465624324235
+Total rows written: 63153
+Values written per second: 456411.7249945939
+Total values written: 505224
+Total time elapsed: 1.106947898864746
+
+5 WORKERS
+Rows written per second: 31263.86
+Total rows written: 63153
+Values written per second: 250110.89
+Total values written: 505224
+Total time elapsed: 2.022353465
+
+10 WORKERS
+Rows written per second: 11815.34
+Total rows written: 63153
+Values written per second: 94522.73
+Total values written: 505224
+Total time elapsed: 5.34562423
+
+20 WORKERS
+Rows written per second: 2068.42
+Total rows written: 63153
+Values written per second: 16547.36
+Total values written: 505224
+Total time elapsed: 30.53234621
