@@ -30,16 +30,10 @@ stock_list = [
 global_dataframe = pd.DataFrame({
   'Workload': pd.Series(dtype='int'),
   'QueryNum': pd.Series(dtype='int'),
-  'NumWorkers':pd.Series(dtype='int'),
-  'MinLatency': pd.Series(dtype='float'),
-  'MaxLatency': pd.Series(dtype='float'),
-  'MedianLatency': pd.Series(dtype='float'),
-  'MeanLatency': pd.Series(dtype='float'),
-  'StdLatency': pd.Series(dtype='float'),
+  'Latency': pd.Series(dtype='float'),
 })
 
 load_dataframe = pd.DataFrame({ 
-  'NumWorkers':pd.Series(dtype='int'),
   'Batch_Size': pd.Series(dtype='int'),
   'TotalMetrics': pd.Series(dtype='float'),
   'MetricsPerSec': pd.Series(dtype='float'),
@@ -63,9 +57,7 @@ def load_data(stock_list, bucket):
   for file in stock_paths:
     temp_df = pd.read_csv(file)
     df = df.append(temp_df)
-
-  # get moving averages
-
+  rows = df.size
 
   df['Date'] = pd.to_datetime(df['Date'])
   df['day_of_week'] =df["Date"].dt.day_name()        
@@ -74,11 +66,14 @@ def load_data(stock_list, bucket):
   start_time = datetime.now()
   write_api.write(bucket=bucket, org=org, record=df, data_frame_measurement_name='Symbol') #, data_frame_timestamp_column="_time")
   end_time = datetime.now()
-  print("Load Time: ")
-  print(end_time-start_time)
+  latency = (end_time-start_time).total_seconds()
+  metrics = rows * 8
+
+  load_dataframe.loc[len(load_dataframe)] = [10000, metrics, metrics/latency, rows/latency, rows]
+  
 
 
-def query_data(query):
+def query_data(query, query_num):
   query_api = client.query_api()
   start_time = datetime.now()
   result = query_api.query(org=org, query=query)
@@ -88,14 +83,13 @@ def query_data(query):
           results.append((record.get_value(), record.get_field()))
   print(results)
   end_time = datetime.now()
-  print("Query Time: ")
-  print(end_time-start_time)
+  latency = (end_time-start_time).total_seconds()
+  global_dataframe.loc[len(global_dataframe)] = [2, query_num, latency]
   return results 
 
 def main():
   # load_data()
-
-  load_data(single_stock, one_stock)
+  load_data(single_stock, "one_stock")
   # 1. Simple aggregate max for a stock, every week for 1 month
   agg_max_stock_week_one_month = '''from(bucket:"one_stock")
       |> range(start: -1mo)
@@ -103,7 +97,8 @@ def main():
       |> aggregateWindow(
       every: 7d,
       fn: max)'''
-  query_data(agg_max_stock_week_one_month)
+  
+  query_data(agg_max_stock_week_one_month, 1)
 
   # 2. Simple aggregate max for a stock, every week for 1 year
   agg_max_stock_week_one_year = '''from(bucket:"one_stock")
@@ -113,9 +108,9 @@ def main():
       |> aggregateWindow(
       every: 7d,
       fn: max)'''
-  query_data(agg_max_stock_week_one_year)
+  query_data(agg_max_stock_week_one_year, 2)
 
-  load_data(five_stocks, five_stock)
+  load_data(five_stocks, "five_stock")
   # 3. Simple aggregate max for five stock, every week for 1 month
   agg_max_stock_week_one_month_5 = '''from(bucket:"five_stock")
       |> range(start: -1mo)
@@ -124,7 +119,7 @@ def main():
       |> aggregateWindow(
       every: 7d,
       fn: max)'''
-  query_data(agg_max_stock_week_one_month_5)
+  query_data(agg_max_stock_week_one_month_5, 3)
 
   # 4. Simple aggregate max for five stock, every week for 1 year
   agg_max_stock_week_one_year_5 = '''from(bucket:"five_stock")
@@ -134,9 +129,9 @@ def main():
       |> aggregateWindow(
       every: 7d,
       fn: max)'''
-  query_data(agg_max_stock_week_one_year_5)
+  query_data(agg_max_stock_week_one_year_5, 4)
 
-  load_data(stock_list, all_stock)    
+  load_data(stock_list, "all_stock")    
   # 5. Aggregate max across all stocks per week over 1 week
   agg_max_stock_week_one_year_all = '''from(bucket:"all_stock")
       |> range(start: -1w)
@@ -145,7 +140,7 @@ def main():
       |> aggregateWindow(
       every: 7d,
       fn: max)'''
-  query_data(agg_max_stock_week_one_year_all)
+  query_data(agg_max_stock_week_one_year_all, 5)
 
   # 6. Compute the average of a stock per week for 1 month
   agg_avg_stock_week_one_stock = '''from(bucket:"one_stock")
@@ -154,8 +149,8 @@ def main():
       |> filter(fn: (r) => r._field == "Close")  
       |> aggregateWindow(
       every: 7d,
-      fn: avg)'''
-  query_data(agg_avg_stock_week_one_stock)
+      fn: mean)'''
+  query_data(agg_avg_stock_week_one_stock, 6)
 
   # 7. Compute the average of all stocks per week for 1 month
   agg_avg_stock_week_all_stocks = '''from(bucket:"all_stock")
@@ -164,9 +159,10 @@ def main():
       |> filter(fn: (r) => r._field == "Close")  
       |> aggregateWindow(
       every: 7d,
-      fn: avg)'''
-  query_data(agg_avg_stock_week_all_stocks)
+      fn: mean)'''
+  query_data(agg_avg_stock_week_all_stocks, 7)
 
+  # batch_size_test()
 
   # compute moving average  
   # moving_average_query = '''from(bucket:"all_stock)
@@ -178,12 +174,23 @@ def main():
   # moving_average = query_api.query(org=org, query=moving_average_query)
 
   # # greater than moving average
-  # greater_average_query = '''from(bucket:"all_stock)
+  # all_query = '''from(bucket:"all_stock)
   #     |> range(start:-1yr)
   #     |> filter(fn: (r) => r._field == "Close")'''
-  # greater_than_moving = query_api.query(org=org, query=greater_average_query)
+  # greater_than_moving = query_api.query(org=org, query=all_query)
 
+  # greater_than_moving_avg = '''join.inner(
+  #   left: moving_average,
+  #   right: greater_than_moving,
+  #   on: (l, r) => l._time == r._time and l.Symbol = r.Symbol)'''
   
+  
+  # gains 
+
+  # global_dataframe.loc[len(global_dataframe)] = [workload_num, query_num, num_workers, min(latencies), max(latencies), statistics.median(latencies), statistics.mean(latencies), statistics.stdev(latencies)]
+
+  global_dataframe.to_csv('influxDB_queryStats.csv', index=False)
+  load_dataframe.to_csv('timescaleDB_loadStats.csv', index=False)
 
   client.close()
   
