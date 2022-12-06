@@ -13,7 +13,7 @@ python get_data.py  in generate_data folder.
 
 ## TimescaleDB:
 
-## Set up EC2 Instance for client 
+### Set up EC2 Instance for client 
 
 https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EC2_GetStarted.html
 
@@ -29,7 +29,7 @@ Create Conda Environment
 Install the requirements.txt
 
 
-## Set up EC2 instance for TimescaleDB
+### Set up EC2 instance for TimescaleDB
 
 Use the AWS AMI for TimescaleDB EC2 instance
 
@@ -58,7 +58,7 @@ Run sudo service postgresql restart to restart.
 In AWS EC2: create a security group for PostgreSQL, allowing inbound port 5432 for the EC2
 
 
-## timescaleDB settings changed
+### timescaleDB settings changed
 
 max_locks_per_transaction = 1024
 
