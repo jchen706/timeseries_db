@@ -229,7 +229,7 @@ Write Into DB with threads
 """
 Write Into DB with threads
 """
-def load_threadpool(list_of_stock_paths, batch_size, worker_number, attempt):
+def load_threadpool(list_of_stock_paths, batch_size, worker_number, attempt=5):
   global conn
   print('Threadpool Injection of Batch size: ' + str(batch_size) + " workers: " + str(worker_number))
 
@@ -375,7 +375,7 @@ ORDER BY time DESC
 workload_four_query = """
 select d.time, d.close, d.change_of_price, d.symbol
 from  (
-SELECT t.time, t.close, t.close - LAG(t.close, 1, t.close) OVER(partition  by t.symbol ORDER BY t.symbol)
+SELECT t.time, t.close, t.close - LAG(t.close, 1, t.close) OVER(partition by t.symbol ORDER BY t.symbol)
 AS change_of_price, t.symbol
 FROM (
 select symbol, time, close 
@@ -599,7 +599,7 @@ if __name__ == "__main__":
 
     # s = [['../stock_data/ALLE.csv']]
 
-    for i in range(1,6):
+    for i in range(1,2):
       for each in s:
         for eachWorkerSize in num_workers:
           # drop table before start
@@ -611,89 +611,89 @@ if __name__ == "__main__":
           # test load
           load_threadpool(each,0,eachWorkerSize,1)
 
-    # for eachLoadSize in load_size:
-    #   for eachWorkerSize in num_workers:
-    #     # drop table before start
-    #     drop_tables('{}'.format(table))
-    #     #create table
-    #     cursor = conn.cursor()
-    #     create_tables(cursor)
-    #     conn.commit()
-    #     # test load
-    #     load_threadpool(stock_paths,eachLoadSize,eachWorkerSize, 1)
+    for eachLoadSize in load_size:
+      for eachWorkerSize in num_workers:
+        # drop table before start
+        drop_tables('{}'.format(table))
+        #create table
+        cursor = conn.cursor()
+        create_tables(cursor)
+        conn.commit()
+        # test load
+        load_threadpool(stock_paths,eachLoadSize,eachWorkerSize)
     
-    # print("======== Workload 2 ======== \n")
+    print("======== Workload 2 ======== \n")
     # Workload 2: Each thread or client executes the same query 
 
 
-    # for i in range(1,5):
-    #   print("+++======== {} Worker ========+++ \n".format(i))
+    for i in range(1,5):
+      print("+++======== {} Worker ========+++ \n".format(i))
 
-    #   print("==== Query 1 ==== \n")
-    #   run_query(agg_max_stock_week_one_month,i,2,1)
-    #   print(' ')
+      print("==== Query 1 ==== \n")
+      run_query(agg_max_stock_week_one_month,i,2,1)
+      print(' ')
 
-    #   print("==== Query 2 ==== \n")
-    #   run_query(agg_max_stock_week_one_year,i,2,2)
-    #   print(' ')
+      print("==== Query 2 ==== \n")
+      run_query(agg_max_stock_week_one_year,i,2,2)
+      print(' ')
 
-    #   print("==== Query 3 ==== \n")
-    #   run_query(agg_max_stock_week_five_one_month,i,2,3)
-    #   print(' ')
+      print("==== Query 3 ==== \n")
+      run_query(agg_max_stock_week_five_one_month,i,2,3)
+      print(' ')
 
-    #   print("==== Query 4 ==== \n")
-    #   run_query(agg_max_stock_week_five_one_year,i,2,4)
-    #   print(' ')
+      print("==== Query 4 ==== \n")
+      run_query(agg_max_stock_week_five_one_year,i,2,4)
+      print(' ')
 
-    #   print("==== Query 5 ==== \n")
-    #   run_query(agg_max_stock_week_all_one_year ,i,2,5)
-    #   print(' ')
+      print("==== Query 5 ==== \n")
+      run_query(agg_max_stock_week_all_one_year ,i,2,5)
+      print(' ')
 
-    #   print("==== Query 6 ==== \n")
-    #   run_query(agg_avg_stock_week_one_month,i,2,6)
-    #   print(' ')
+      print("==== Query 6 ==== \n")
+      run_query(agg_avg_stock_week_one_month,i,2,6)
+      print(' ')
 
-    #   print("==== Query 7 ==== \n")
-    #   run_query(agg_avg_stock_week_all_one_month,i,2,7)
-    #   print(' ')
+      print("==== Query 7 ==== \n")
+      run_query(agg_avg_stock_week_all_one_month,i,2,7)
+      print(' ')
       
 
 
-    # print("==== Workload 3 ====")
-    # for i in range(1,5):
-    #   print("+++======== {} Worker ========+++ \n".format(i))
-    #   run_query(workload_three_query, i, 3, 1,1)
+    print("==== Workload 3 ====")
+    for i in range(1,5):
+      print("+++======== {} Worker ========+++ \n".format(i))
+      run_query(workload_three_query, i, 3, 1,1)
       
       
-    # print("==== Workload 4 ==== \n")
+    print("==== Workload 4 ==== \n")
 
-    # # # test query with 1000, 5000, 100000 data points
-    # # # 1000 / len(stocks_path) = rows per stock added to the table
+    # # test query with 1000, 5000, 100000 data points
+    # # 1000 / len(stocks_path) = rows per stock added to the table
 
-    # num_data_points_list = [1000,5000,10000]
-    # for each in num_data_points_list:
-    #   print("==== TEST {} DATA POINTS ==== \n".format(each))
+    num_data_points_list = [1000,5000,10000]
+    for each in num_data_points_list:
+      print("==== TEST {} DATA POINTS ==== \n".format(each))
 
-    #   drop_tables('{}'.format(table))
-    #   # # create table if not exist
-    #   cursor = conn.cursor()
-    #   create_tables(cursor)
-    #   conn.commit()
-    #   get_consecutive_days(stock_paths, each)
-    #   cursor.execute(query_total_records)
-    #   total_records_count = int(cursor.fetchall()[0][0])
-    #   print("Loaded: Total Data Points: " + str(total_records_count))
+      drop_tables('{}'.format(table))
+      # # create table if not exist
+      cursor = conn.cursor()
+      create_tables(cursor)
+      conn.commit()
+      get_consecutive_days(stock_paths, each)
+      cursor.execute(query_total_records)
+      total_records_count = int(cursor.fetchall()[0][0])
+      print("Loaded: Total Data Points: " + str(total_records_count))
       
-    #   for i in range(1,5):
-    #     print("+++======== {} Worker ========+++ \n".format(i))
-    #     run_query(workload_four_query, i, 4, 1)
-        # break
+      for i in range(1,5):
+        print("+++======== {} Worker ========+++ \n".format(i))
+        run_query(workload_four_query, i, 4)
+        break
     
     # # close connection
     conn.close()
 
     # # export global dataframe to csv 
-    # global_dataframe.to_csv('timescaleDB_queryStats.csv', index=False)
+    global_dataframe.to_csv('timescaleDB_queryStats.csv', index=False)
     load_dataframe.to_csv('timescaleDB_loadStats.csv', index=False)
   except KeyboardInterrupt:
       try:
