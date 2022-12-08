@@ -1,0 +1,56 @@
+NUMBER OF WORKERS: 1
+~~~~~~~~~WORKLOAD 2~~~~~~~~~~
+~~~~~~~~~QUERY 1~~~~~~~~~~
+Min latency for Workload 2, Query 1: 0.002445220947265625
+Max latency for Workload 2, Query 1: 0.007436037063598633
+Median latency for Workload 2, Query 1: 0.002544879913330078
+Mean latency for Workload 2, Query 1: 0.003519296646118164
+Standard Deviation latency for Workload 2, Query 1: 0.002190670533049904
+~~~~~~~~~QUERY 2~~~~~~~~~~
+Min latency for Workload 2, Query 2: 0.0024290084838867188
+Max latency for Workload 2, Query 2: 0.002791881561279297
+Median latency for Workload 2, Query 2: 0.0024497509002685547
+Mean latency for Workload 2, Query 2: 0.002513742446899414
+Standard Deviation latency for Workload 2, Query 2: 0.0001557555567644007
+~~~~~~~~~QUERY 3~~~~~~~~~~
+Min latency for Workload 2, Query 3: 0.0025281906127929688
+Max latency for Workload 2, Query 3: 0.0031669139862060547
+Median latency for Workload 2, Query 3: 0.002562999725341797
+Mean latency for Workload 2, Query 3: 0.0026732921600341798
+Standard Deviation latency for Workload 2, Query 3: 0.0002763413577002065
+~~~~~~~~~QUERY 4~~~~~~~~~~
+Min latency for Workload 2, Query 4: 0.003189563751220703
+Max latency for Workload 2, Query 4: 0.003730297088623047
+Median latency for Workload 2, Query 4: 0.0032520294189453125
+Mean latency for Workload 2, Query 4: 0.003367328643798828
+Standard Deviation latency for Workload 2, Query 4: 0.0002214217873855681
+~~~~~~~~~QUERY 5~~~~~~~~~~
+Min latency for Workload 2, Query 5: 0.0024743080139160156
+Max latency for Workload 2, Query 5: 0.0025625228881835938
+Median latency for Workload 2, Query 5: 0.002537965774536133
+Mean latency for Workload 2, Query 5: 0.002530479431152344
+Standard Deviation latency for Workload 2, Query 5: 3.492592129579028e-05
+~~~~~~~~~QUERY 6~~~~~~~~~~
+Min latency for Workload 2, Query 6: 0.0023467540740966797
+Max latency for Workload 2, Query 6: 0.0025243759155273438
+Median latency for Workload 2, Query 6: 0.002377748489379883
+Mean latency for Workload 2, Query 6: 0.002406406402587891
+Standard Deviation latency for Workload 2, Query 6: 6.91837969977103e-05
+~~~~~~~~~QUERY 7~~~~~~~~~~
+Min latency for Workload 2, Query 7: 0.002468109130859375
+Max latency for Workload 2, Query 7: 0.0026090145111083984
+Median latency for Workload 2, Query 7: 0.0025336742401123047
+Mean latency for Workload 2, Query 7: 0.0025435447692871093
+Standard Deviation latency for Workload 2, Query 7: 5.4499796302830615e-05
+~~~~~~~~~WORKLOAD 3~~~~~~~~~~
+Min latency for Workload 3, Query 1: 0.011362314224243164
+Max latency for Workload 3, Query 1: 0.011809349060058594
+Median latency for Workload 3, Query 1: 0.01171255111694336
+Mean latency for Workload 3, Query 1: 0.011658954620361327
+Standard Deviation latency for Workload 3, Query 1: 0.0001794504440023719
+~~~~~~~~~WORKLOAD 4~~~~~~~~~~
+Min latency for Workload 4, Query 1: 0.009116888046264648
+Max latency for Workload 4, Query 1: 0.012854337692260742
+Median latency for Workload 4, Query 1: 0.009706735610961914
+Mean latency for Workload 4, Query 1: 0.010430669784545899
+Standard Deviation latency for Workload 4, Query 1: 0.0015903843573625168

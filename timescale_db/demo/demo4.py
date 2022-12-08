@@ -229,7 +229,7 @@ Write Into DB with threads
 """
 Write Into DB with threads
 """
-def load_threadpool(list_of_stock_paths, batch_size, worker_number, attempt=5):
+def load_threadpool(list_of_stock_paths, batch_size, worker_number, attempt):
   global conn
   print('Threadpool Injection of Batch size: ' + str(batch_size) + " workers: " + str(worker_number))
 
@@ -575,7 +575,7 @@ if __name__ == "__main__":
     # load_threadpool(stock_paths,70000,4,1)
 
     # 
-    print("======== Workload 1 ======== \n")
+    # print("======== Workload 1 ======== \n")
     load_size = [1000,5000,10000]
     num_workers = [1,5,10,20]
     # load_size = [10000]
@@ -599,70 +599,70 @@ if __name__ == "__main__":
 
     # s = [['../stock_data/ALLE.csv']]
 
-    for i in range(1,2):
-      for each in s:
-        for eachWorkerSize in num_workers:
-          # drop table before start
-          drop_tables('{}'.format(table))
-          #create table
-          cursor = conn.cursor()
-          create_tables(cursor)
-          conn.commit()
-          # test load
-          load_threadpool(each,0,eachWorkerSize,1)
+    # for i in range(1,2):
+    #   for each in s:
+    #     for eachWorkerSize in num_workers:
+    #       # drop table before start
+    #       drop_tables('{}'.format(table))
+    #       #create table
+    #       cursor = conn.cursor()
+    #       create_tables(cursor)
+    #       conn.commit()
+    #       # test load
+    #       load_threadpool(each,0,eachWorkerSize,1)
 
-    for eachLoadSize in load_size:
-      for eachWorkerSize in num_workers:
-        # drop table before start
-        drop_tables('{}'.format(table))
-        #create table
-        cursor = conn.cursor()
-        create_tables(cursor)
-        conn.commit()
-        # test load
-        load_threadpool(stock_paths,eachLoadSize,eachWorkerSize)
+    # for eachLoadSize in load_size:
+    #   for eachWorkerSize in num_workers:
+    #     # drop table before start
+    #     drop_tables('{}'.format(table))
+    #     #create table
+    #     cursor = conn.cursor()
+    #     create_tables(cursor)
+    #     conn.commit()
+    #     # test load
+    #     load_threadpool(stock_paths,eachLoadSize,eachWorkerSize, 1)
     
-    print("======== Workload 2 ======== \n")
+    # print("======== Workload 2 ======== \n")
     # Workload 2: Each thread or client executes the same query 
 
 
-    for i in range(1,5):
-      print("+++======== {} Worker ========+++ \n".format(i))
+    # for i in range(1,5):
+    #   print("+++======== {} Worker ========+++ \n".format(i))
 
-      print("==== Query 1 ==== \n")
-      run_query(agg_max_stock_week_one_month,i,2,1)
-      print(' ')
+    #   print("==== Query 1 ==== \n")
+    #   run_query(agg_max_stock_week_one_month,i,2,1)
+    #   print(' ')
 
-      print("==== Query 2 ==== \n")
-      run_query(agg_max_stock_week_one_year,i,2,2)
-      print(' ')
+    #   print("==== Query 2 ==== \n")
+    #   run_query(agg_max_stock_week_one_year,i,2,2)
+    #   print(' ')
 
-      print("==== Query 3 ==== \n")
-      run_query(agg_max_stock_week_five_one_month,i,2,3)
-      print(' ')
+    #   print("==== Query 3 ==== \n")
+    #   run_query(agg_max_stock_week_five_one_month,i,2,3)
+    #   print(' ')
 
-      print("==== Query 4 ==== \n")
-      run_query(agg_max_stock_week_five_one_year,i,2,4)
-      print(' ')
+    #   print("==== Query 4 ==== \n")
+    #   run_query(agg_max_stock_week_five_one_year,i,2,4)
+    #   print(' ')
 
-      print("==== Query 5 ==== \n")
-      run_query(agg_max_stock_week_all_one_year ,i,2,5)
-      print(' ')
+    #   print("==== Query 5 ==== \n")
+    #   run_query(agg_max_stock_week_all_one_year ,i,2,5)
+    #   print(' ')
 
-      print("==== Query 6 ==== \n")
-      run_query(agg_avg_stock_week_one_month,i,2,6)
-      print(' ')
+    #   print("==== Query 6 ==== \n")
+    #   run_query(agg_avg_stock_week_one_month,i,2,6)
+    #   print(' ')
 
-      print("==== Query 7 ==== \n")
-      run_query(agg_avg_stock_week_all_one_month,i,2,7)
-      print(' ')
+    #   print("==== Query 7 ==== \n")
+    #   run_query(agg_avg_stock_week_all_one_month,i,2,7)
+    #   print(' ')
       
 
 
-    print("==== Workload 3 ====")
-    for i in range(1,5):
-      print("+++======== {} Worker ========+++ \n".format(i))
-      run_query(workload_three_query, i, 3, 1,1)
+    # print("==== Workload 3 ====")
+    # for i in range(1,5):
+    #   print("+++======== {} Worker ========+++ \n".format(i))
+    #   run_query(workload_three_query, i, 3, 1,1)
       
       
     print("==== Workload 4 ==== \n")
@@ -686,9 +686,8 @@ if __name__ == "__main__":
       
       for i in range(1,5):
         print("+++======== {} Worker ========+++ \n".format(i))
-        run_query(workload_four_query, i, 4)
-        break
-    
+        run_query(workload_four_query, i, 4, 1)
+      
     # # close connection
     conn.close()
 
