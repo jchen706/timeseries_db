@@ -124,6 +124,41 @@ python3 workloads_2_3_4.py [number of workers]
 
 Use the AWS AMI
 
+### In EC 2 Instance, install InfluxDB
+
+wget https://dl.influxdata.com/influxdb/releases/influxdb2-2.5.1-xxx.deb
+
+sudo dpkg -i influxdb2-2.5.1-xxx.deb
+
+
+### Start Influx service:
+sudo service influxdb start
+
+### estart service and ensure it is working: 
+sudo service influxdb status
+
+### set up InfluxDB:
+influx setup
+
+## Input desired Username, Password, Organization Name, Bucket Name (table name)
+
+Go to http://localhost:8086 
+
+And create the following buckets:
+'one_stock'
+'five_stock'
+'all_stock'
+'mini1000'
+'mini5000'
+'mini10000'
+
+
+## Now run file in new terminal while Influxdb is running
+## in ../influx_db run:
+python client.py 
+
+
+All workloads are included in the script, the metrics are saved to three csv files in the ./influx_db directory.
 
 
 
