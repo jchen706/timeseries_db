@@ -1,72 +1,133 @@
 ## Use Miniconda
 
-Create environment, install pip -r requirements.txt
+Create environment, install 
 
+```bash
+pip -r requirements.txt
+```
 
 
 ## Generate Data:
 
-Set Path ("D:\a_timeseries") to where to download at the code of options.set_preference("browser.download.dir", r"D:\a_timeseries")
+Set Path ("D:\a_timeseries") to where to download at the code of 
+```bash
+options.set_preference("browser.download.dir", r"D:\a_timeseries")
+```
+In the generate folder run:
 
-
-python get_data.py  in generate_data folder.
+```bash
+python get_data.py 
+```
 
 ## TimescaleDB:
-
-### Set up EC2 Instance for client 
-
-https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EC2_GetStarted.html
-
-
-sudo yum install python3-devel pip3 gcc
-
-
-Install Miniconda on EC2
-
-
-Create Conda Environment
-
-Install the requirements.txt
 
 
 ### Set up EC2 instance for TimescaleDB
 
-Use the AWS AMI for TimescaleDB EC2 instance
+Use any of the AWS AMI for TimescaleDB EC2 instance, I used the Ubuntu 22, Timescale 2.8.
+SSH into the EC2 instance on command line by following https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EC2_GetStarted.html.
 
-SSH in: ssh -i ~/.ssh/KEY-PAIR.pem ubuntu@HOSTNAME
-
-Switch to the postgres user: sudo -u postgres -s
-
-sudo -u postgres psql postgres
 
 The config directory is /etc/postgresql/12/main/.
 
-in postgresql.conf, change listen_addresses = '*'
+```bash
+cd /etc/postgresql/14/main/
+```
+
+
+in postgresql.conf, change "listen_addresses = '*'"
+
+```bash
+listen_addresses = '*'
+```
 
 in pg_hba.conf, add 'host all all "IP-Address of EC2 / 32" scram-sha-256'
 in pg_hba.conf, add 'host all all "Your IP-Address / 32" scram-sha-256'
+Certain Version of Ubuntu doesn't support scram-sha-256, so you have to change to md5.
+Here is a tutorial: https://www.cybertec-postgresql.com/en/from-md5-to-scram-sha-256-in-postgresql/.
 
+```bash
+host all all 12.0.0.0/32 scram-sha-256
+```
 
-Run psql then ALTER USER postgres PASSWORD 'newPassword'; to set a password.
+Switch to the postgres user: 
+
+```bash
+sudo -u postgres -s
+```
+
+Run psql then 
+ALTER USER postgres PASSWORD 'newPassword'; to set a password.
+You have to be in the postgres user in bash not the Ubuntu Root.
+
+```bash
+ALTER USER postgres PASSWORD '123';
+```
+
 
 Run timescaledb-tune to tune for the VM.
 
-Run pg_ctlcluster 14 main reload to reload 
+```bash
+timescaledb-tune
+```
 
 Run sudo service postgresql restart to restart.
 
-In AWS EC2: create a security group for PostgreSQL, allowing inbound port 5432 for the EC2
+```bash
+sudo service postgresql restart
+```
 
+In AWS EC2: create a security group for PostgreSQL, allowing inbound port 5432 for the EC2.
+Here is a tutorial: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/authorizing-access-to-an-instance.html. 
+
+This will log you into postgres user of PostgreSQL.
+You may have enter the password.
+
+```bash
+sudo -u postgres psql postgres
+```
 
 ### timescaleDB settings changed
 
 max_locks_per_transaction = 1024
 
-
 ### Local Docker
 
+```bash
 docker run -d --name timescaledb -p 5432:5432 -e POSTGRES_PASSWORD=123 timescale/timescaledb-ha:pg14-latest
+```
 
+For local docker, you'll have to push have the folder clone within docker to work with localhost.
+
+
+### Set up EC2 Instance for client 
+
+https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EC2_GetStarted.html
+
+```bash
+sudo yum install python3-devel pip3 gcc
+```
+
+Install Miniconda or Anaconda on EC2 and Create Conda Environment. Here's is Anaconda:
+https://medium.com/@GalarnykMichael/aws-ec2-part-3-installing-anaconda-on-ec2-linux-ubuntu-dbef0835818a.
+
+
+Install the requirements.txt
+
+```bash
+pip -r requirements.txt
+```
+
+#### Run all the workloads , this will run all the workloads for timescaledb. May have to comment off workloads as the EC2 instance maybe timeout connection when connecting with another EC2 instance.
+
+
+Change the password="123", host="18.204.21.200", in the ThreadedConnectionPool around line 140-143 as necessary.
+
+To Run the Client: 
+
+```bash
+python3 client.py
+```
 
 ## ClickhouseDB:
 
