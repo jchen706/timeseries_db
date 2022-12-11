@@ -232,7 +232,7 @@ Write Into DB with threads
 """
 Write Into DB with threads
 """
-def load_threadpool(list_of_stock_paths, batch_size, worker_number, attempt=5):
+def load_threadpool(list_of_stock_paths, batch_size, worker_number, attempt=1):
 
   try:
     global conn
