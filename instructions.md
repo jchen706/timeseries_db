@@ -134,6 +134,12 @@ We also will have to enable md5 in postgresql.conf.
 
 ![Enable md5](./pictures/enable_md5.JPG "Enable md5").
 
+Run sudo service postgresql restart to restart anytime you might have error or change configurations.
+
+```bash
+sudo service postgresql restart
+```
+
 
 Next we want to switch to the postgres user: 
 
@@ -190,6 +196,12 @@ Here is a tutorial: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/authoriz
 
 
 ![Timescale DB inbound rules](./pictures/timescale_db_inbound_rules.JPG "Timescale DB inbound rules").
+
+Run sudo service postgresql restart to restart anytime you might have error or change configurations.
+
+```bash
+sudo service postgresql restart
+```
 
 
 This will log you into postgres user of PostgreSQL with password at port 5432 at code level.
