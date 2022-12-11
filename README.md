@@ -130,10 +130,15 @@ sudo nano pg_hba.conf
 ![Change pg_hba.conf](./pictures/change_pg_hba.JPG "Change pg_hba.conf").
 
 
-We also will have to enable md5 in postgresql.conf.
+We also will have to enable md5 in postgresql.conf and restart the postgresql service.
 
 ![Enable md5](./pictures/enable_md5.JPG "Enable md5").
 
+Run sudo service postgresql restart to restart anytime you might have error or change configurations.
+
+```bash
+sudo service postgresql restart
+```
 
 Next we want to switch to the postgres user: 
 
@@ -194,6 +199,11 @@ Here is a tutorial: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/authoriz
 
 This will log you into postgres user of PostgreSQL with password at port 5432 at code level.
 
+Run sudo service postgresql restart to restart anytime you might have error or change configurations.
+
+```bash
+sudo service postgresql restart
+```
 
 
 ### Set up EC2 Instance for client 
