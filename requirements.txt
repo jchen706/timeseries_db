@@ -8,10 +8,10 @@ colorama==0.4.6
 exceptiongroup==1.0.4
 h11==0.14.0
 idna==3.4
-numpy==1.23.5
+numpy
 outcome==1.2.0
 packaging==21.3
-pandas==1.5.1
+pandas
 psycopg2==2.9.5
 pycparser==2.21
 pyparsing==3.0.9
