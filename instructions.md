@@ -326,6 +326,8 @@ A tool that was used was DBeaver for TimescaleDB which when you click  new conne
 
 Below are the connection parameters used for a custom IP address with authentication method selected as private key which is the .pem file downloaded with the EC2 creation. 
 
+You have to add the local IP address to the pg_hba.conf in the configurations of the database in EC2.
+
 ![TimescaleDB DBeaver Connect](./pictures/timescaledb_connect.JPG "TimescaleDB DBeaver Connect").
 
 Below are the connection parameters used for a custom IP address with Host as the IP address and Port set to the default 5432, username and password are needed from the postgreSQL.
