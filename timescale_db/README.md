@@ -6,18 +6,12 @@ https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EC2_GetStarted.html
 sudo yum install python3-devel pip3 gcc
 
 
-Install Miniconda on EC2:
-
-exec bash
+Install Miniconda on EC2
 
 
 Create Conda Environment
 
-pip3 i
-
-
-
-
+Install the requirements.txt
 
 
 ## Set up EC2 instance for TimescaleDB
@@ -48,7 +42,7 @@ Run sudo service postgresql restart to restart.
 In AWS EC2: create a security group for PostgreSQL, allowing inbound port 5432 for the EC2
 
 
-# timescaleDB settings
+# timescaleDB settings changed
 
 max_locks_per_transaction = 1024
 
