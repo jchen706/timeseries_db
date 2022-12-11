@@ -23,7 +23,10 @@ from psycopg2.extras import LoggingConnection
 import logging
 import statistics
 import threading
+import argparse
 
+
+parser = argparse.ArgumentParser(description='TimescaleDB Workload Command Line Options')
 
 
 logging.basicConfig(level=logging.DEBUG)
@@ -139,7 +142,7 @@ def connect():
     tcp = ThreadedConnectionPool(1, 25, dbname="postgres",
       user="postgres",
       password="123",
-      host="18.204.21.200",
+      host="localhost",
       port="5432",
       keepalives=1,
       keepalives_idle=30,
@@ -230,54 +233,63 @@ Write Into DB with threads
 Write Into DB with threads
 """
 def load_threadpool(list_of_stock_paths, batch_size, worker_number, attempt=5):
-  global conn
-  print('Threadpool Injection of Batch size: ' + str(batch_size) + " workers: " + str(worker_number))
 
-  #insert data into the table
-  df = pd.read_csv(list_of_stock_paths[0])
-  for i in range(1,len(list_of_stock_paths)):
-    temp_df = pd.read_csv(list_of_stock_paths[i])
-    df = pd.concat([df, temp_df])
+  try:
+    global conn
+
+
+    #insert data into the table
+    df = pd.read_csv(list_of_stock_paths[0])
+    for i in range(1,len(list_of_stock_paths)):
+      temp_df = pd.read_csv(list_of_stock_paths[i])
+      df = pd.concat([df, temp_df])
+    
+
+    # df = pd.read_csv('../stock_csv/ALLE.csv')
+    print(df)
+    print(len(df))
+
+    if (batch_size==0):
+      batch_size = len(df) // worker_number
+    
+    print('Threadpool Injection of Batch size: ' + str(batch_size) + " workers: " + str(worker_number))
+
+
+    itemBank = list(zip(*map(df.get, df)))
+    total_rows = len(itemBank)
+
+    print("Running thread pool for load:")
+    threaded_start = time.time()
+    futures = []
+    # queue
+    # popping of the futures
+    with concurrent.futures.ThreadPoolExecutor(max_workers=worker_number) as executor:
+        for i in range(0,len(df), batch_size):
+            # 5 item at a time
+            # print(i,i+batch_size)
+            if (i+batch_size > len(df)):
+              futures.append(executor.submit(inject_thread,rowlist=itemBank[i:len(df)],conn=conn))
+            else:
+              futures.append(executor.submit(inject_thread,rowlist=itemBank[i:i+batch_size],conn=conn))
+    
+    concurrent.futures.wait(futures,return_when=ALL_COMPLETED)
+    run_time = time.time() - threaded_start
+    total_metrics = total_rows * 8
+    print("Load Data by Thread Pool time:", run_time)
+    print('Rows written per second: {0}'.format(total_rows / run_time))
+    print('Total rows written: {0}'.format(total_rows))
+    print('Values written per second: {0}'.format(total_rows * 8 / run_time))
+    print('Total values written: {0}'.format(total_rows * 8))
+    print('Total Metrics ' + str(total_metrics))
+    # ['NumWorkers','Batch_Size','TimeStamp','TotalMetrics','MetricsPerSec','RowsPerSec','TotalRows']
+    global load_dataframe
+    load_dataframe.loc[len(load_dataframe)] = [worker_number, batch_size, total_metrics, total_metrics/run_time, total_rows/run_time, total_rows, pd.Timestamp(datetime.now()), attempt, run_time]
+  except KeyboardInterrupt:
+      try:
+              sys.exit(0)
+      except SystemExit:
+              os._exit(0)
   
-
-  # df = pd.read_csv('../stock_csv/ALLE.csv')
-  print(df)
-  print(len(df))
-
-  if (batch_size==0):
-    batch_size = len(df) // worker_number
-
-  itemBank = list(zip(*map(df.get, df)))
-  total_rows = len(itemBank)
-
-  print("Running thread pool for load:")
-  threaded_start = time.time()
-  futures = []
-  # queue
-  # popping of the futures
-  with concurrent.futures.ThreadPoolExecutor(max_workers=worker_number) as executor:
-      for i in range(0,len(df), batch_size):
-          # 5 item at a time
-          # print(i,i+batch_size)
-          if (i+batch_size > len(df)):
-            futures.append(executor.submit(inject_thread,rowlist=itemBank[i:len(df)],conn=conn))
-          else:
-            futures.append(executor.submit(inject_thread,rowlist=itemBank[i:i+batch_size],conn=conn))
-  
-  concurrent.futures.wait(futures,return_when=ALL_COMPLETED)
-  run_time = time.time() - threaded_start
-  total_metrics = total_rows * 8
-  print("Load Data by Thread Pool time:", run_time)
-  print('Rows written per second: {0}'.format(total_rows / run_time))
-  print('Total rows written: {0}'.format(total_rows))
-  print('Values written per second: {0}'.format(total_rows * 8 / run_time))
-  print('Total values written: {0}'.format(total_rows * 8))
-  print('Total Metrics ' + str(total_metrics))
-  # ['NumWorkers','Batch_Size','TimeStamp','TotalMetrics','MetricsPerSec','RowsPerSec','TotalRows']
-  global load_dataframe
-  load_dataframe.loc[len(load_dataframe)] = [worker_number, batch_size, total_metrics, total_metrics/run_time, total_rows/run_time, total_rows, pd.Timestamp(datetime.now()), attempt, run_time]
-
-  # return run_time
 
 
 # 1. Simple aggregate max for a stock, every week for 1 month
@@ -574,8 +586,12 @@ if __name__ == "__main__":
     # # Load Data into Table using Threadpool with batch size and 4
     # load_threadpool(stock_paths,70000,4,1)
 
-    # 
-    print("======== Workload 1 ======== \n")
+
+    parser.add_argument('workload_num', type=int,
+                    help='A required integer for workload number. Ex: 11 for workload 1 with Data Rows Divided by num_workers')
+
+    args = parser.parse_args()
+
     load_size = [1000,5000,10000]
     num_workers = [1,5,10,20]
     # load_size = [10000]
@@ -597,10 +613,37 @@ if __name__ == "__main__":
       '../stock_data/ABBV.csv'
     ], stock_paths]
 
-    # s = [['../stock_data/ALLE.csv']]
 
-    for i in range(1,2):
-      for each in s:
+    if (args.workload_num == 11):
+
+     
+      print("======== Workload 1 ======== \n")
+    
+
+      # s = [['../stock_data/ALLE.csv']]
+      print("<---- Data Rows Divided by num_workers ------>")
+
+      # loop through i tries for each data set for each worker size
+      # batch size set to 0 to divide the dataset by the eachWorkerSize
+      for i in range(1,5):
+        for each in s:
+          for eachWorkerSize in num_workers:
+            # drop table before start
+            drop_tables('{}'.format(table))
+            #create table
+            cursor = conn.cursor()
+            create_tables(cursor)
+            conn.commit()
+            # test load
+            load_threadpool(each,0,eachWorkerSize,i)
+
+    elif (args.workload_num == 12):
+      print("======== Workload 1 ======== \n")
+
+      print("<---- Normal Load Data ------>")
+
+      # loop through each batch size and each worker size
+      for eachLoadSize in load_size:
         for eachWorkerSize in num_workers:
           # drop table before start
           drop_tables('{}'.format(table))
@@ -609,86 +652,79 @@ if __name__ == "__main__":
           create_tables(cursor)
           conn.commit()
           # test load
-          load_threadpool(each,0,eachWorkerSize,1)
+          load_threadpool(stock_paths,eachLoadSize,eachWorkerSize)
+    elif (args.workload_num == 2):
+      print("======== Workload 2 ======== \n")
+      # Workload 2: Each thread or client executes the same query 
 
-    for eachLoadSize in load_size:
-      for eachWorkerSize in num_workers:
-        # drop table before start
+      # loop 5 tries for each query
+      for i in range(1,5):
+        print("+++======== {} Worker ========+++ \n".format(i))
+
+        print("==== Query 1 ==== \n")
+        run_query(agg_max_stock_week_one_month,i,2,1)
+        print(' ')
+
+        print("==== Query 2 ==== \n")
+        run_query(agg_max_stock_week_one_year,i,2,2)
+        print(' ')
+
+        print("==== Query 3 ==== \n")
+        run_query(agg_max_stock_week_five_one_month,i,2,3)
+        print(' ')
+
+        print("==== Query 4 ==== \n")
+        run_query(agg_max_stock_week_five_one_year,i,2,4)
+        print(' ')
+
+        print("==== Query 5 ==== \n")
+        run_query(agg_max_stock_week_all_one_year ,i,2,5)
+        print(' ')
+
+        print("==== Query 6 ==== \n")
+        run_query(agg_avg_stock_week_one_month,i,2,6)
+        print(' ')
+
+        print("==== Query 7 ==== \n")
+        run_query(agg_avg_stock_week_all_one_month,i,2,7)
+        print(' ')
+    elif(args.workload_num == 3):
+
+
+      print("==== Workload 3 ====")
+      for i in range(1,5):
+        print("+++======== {} Worker ========+++ \n".format(i))
+        run_query(workload_three_query, i, 3, 1)
+        
+    elif (args.workload_num == 4):   
+      print("==== Workload 4 ==== \n")
+
+      # # test query with 1000, 5000, 100000 data points
+      # # 1000 / len(stocks_path) = rows per stock added to the table
+
+      num_data_points_list = [1000,5000,10000]
+      for each in num_data_points_list:
+        print("==== TEST {} DATA POINTS ==== \n".format(each))
+
         drop_tables('{}'.format(table))
-        #create table
+        # # create table if not exist
         cursor = conn.cursor()
         create_tables(cursor)
         conn.commit()
-        # test load
-        load_threadpool(stock_paths,eachLoadSize,eachWorkerSize)
-    
-    print("======== Workload 2 ======== \n")
-    # Workload 2: Each thread or client executes the same query 
+        get_consecutive_days(stock_paths, each)
+        cursor.execute(query_total_records)
+        total_records_count = int(cursor.fetchall()[0][0])
+        print("Loaded: Total Data Points: " + str(total_records_count))
+        
+        for i in range(1,5):
+          print("+++======== {} Worker ========+++ \n".format(i))
+          run_query(workload_four_query, i, 4,1)
+          # break
+    elif (args.workload_num == 5):
+        drop_tables('{}'.format(table))
+    else:
+      print("Not valid number argument for the workload")
 
-
-    for i in range(1,5):
-      print("+++======== {} Worker ========+++ \n".format(i))
-
-      print("==== Query 1 ==== \n")
-      run_query(agg_max_stock_week_one_month,i,2,1)
-      print(' ')
-
-      print("==== Query 2 ==== \n")
-      run_query(agg_max_stock_week_one_year,i,2,2)
-      print(' ')
-
-      print("==== Query 3 ==== \n")
-      run_query(agg_max_stock_week_five_one_month,i,2,3)
-      print(' ')
-
-      print("==== Query 4 ==== \n")
-      run_query(agg_max_stock_week_five_one_year,i,2,4)
-      print(' ')
-
-      print("==== Query 5 ==== \n")
-      run_query(agg_max_stock_week_all_one_year ,i,2,5)
-      print(' ')
-
-      print("==== Query 6 ==== \n")
-      run_query(agg_avg_stock_week_one_month,i,2,6)
-      print(' ')
-
-      print("==== Query 7 ==== \n")
-      run_query(agg_avg_stock_week_all_one_month,i,2,7)
-      print(' ')
-      
-
-
-    print("==== Workload 3 ====")
-    for i in range(1,5):
-      print("+++======== {} Worker ========+++ \n".format(i))
-      run_query(workload_three_query, i, 3, 1,1)
-      
-      
-    print("==== Workload 4 ==== \n")
-
-    # # test query with 1000, 5000, 100000 data points
-    # # 1000 / len(stocks_path) = rows per stock added to the table
-
-    num_data_points_list = [1000,5000,10000]
-    for each in num_data_points_list:
-      print("==== TEST {} DATA POINTS ==== \n".format(each))
-
-      drop_tables('{}'.format(table))
-      # # create table if not exist
-      cursor = conn.cursor()
-      create_tables(cursor)
-      conn.commit()
-      get_consecutive_days(stock_paths, each)
-      cursor.execute(query_total_records)
-      total_records_count = int(cursor.fetchall()[0][0])
-      print("Loaded: Total Data Points: " + str(total_records_count))
-      
-      for i in range(1,5):
-        print("+++======== {} Worker ========+++ \n".format(i))
-        run_query(workload_four_query, i, 4)
-        break
-    
     # # close connection
     conn.close()
 
