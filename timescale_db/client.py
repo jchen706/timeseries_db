@@ -281,7 +281,7 @@ def load_threadpool(list_of_stock_paths, batch_size, worker_number, attempt=5):
     print('Values written per second: {0}'.format(total_rows * 8 / run_time))
     print('Total values written: {0}'.format(total_rows * 8))
     print('Total Metrics ' + str(total_metrics))
-    # ['NumWorkers','Batch_Size','TimeStamp','TotalMetrics','MetricsPerSec','RowsPerSec','TotalRows']
+    # ['NumWorkers','Batch_Size','TimeStamp','TotalMetrics','MetricsPerSec','RowsPerSec','TotalRows', Timestamp, Attempt #, Latency]
     global load_dataframe
     load_dataframe.loc[len(load_dataframe)] = [worker_number, batch_size, total_metrics, total_metrics/run_time, total_rows/run_time, total_rows, pd.Timestamp(datetime.now()), attempt, run_time]
   except KeyboardInterrupt:
@@ -289,6 +289,9 @@ def load_threadpool(list_of_stock_paths, batch_size, worker_number, attempt=5):
               sys.exit(0)
       except SystemExit:
               os._exit(0)
+  except Exception as e:
+    logger.warning("{}".format(e))
+    conn.rollback()
   
 
 
