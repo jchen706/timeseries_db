@@ -329,6 +329,25 @@ NumWorkers, Batch_Size, TotalMetrics, MetricsPerSec, RowsPerSec, TotalRows, Time
 Workload 2 has csv column format as 
 Workload, QueryNum, NumWorkers, MinLatency, MaxLatency, MedianLatency, MeanLatency, StdLatency, TimeStamp 
 
+The CSV file generated for Workload 1 has format as below:
+
+```
+NumWorkers,Batch_Size,TotalMetrics,MetricsPerSec,RowsPerSec,TotalRows,TimeStamp,Try,Latency
+1,2269,18152.0,3221.5484616943386,402.6935577117923,2269.0,2022-12-11 17:01:14.667044,1,5.634557485580444
+5,453,18152.0,3118.989435543048,389.873679442881,2269.0,2022-12-11 17:01:20.811056,1,5.819833755493164
+10,226,18152.0,3088.634208701189,386.0792760876486,2269.0,2022-12-11 17:01:27.031985,1,5.877031326293945
+```
+
+The CSV file generated for Workload 2, Workload 3 and Workload 4 has format as below:
+
+```
+Workload,QueryNum,NumWorkers,MinLatency,MaxLatency,MedianLatency,MeanLatency,StdLatency,TimeStamp
+2,1,1,0.001255035400390625,0.006853342056274414,0.0012691020965576172,0.0024042129516601562,0.0024876331650966472,2022-12-11 17:48:40.548154
+2,2,1,0.004071712493896484,0.005887508392333984,0.004404783248901367,0.00460505485534668,0.0007409026615084305,2022-12-11 17:48:40.856240
+```
+
+RowsPerSec were used for Workload 1 comparisons and MeanLatency was used for Workloads 2, 3, and 4 comparison.
+
 ### Workloads 3 and Workload 4
 
 Workloads 3 and Workload 4 were run in the t2.xlarge EC2 instance. The setup for t2.xlarge is same as setting up for the EC2 for Database from above.
