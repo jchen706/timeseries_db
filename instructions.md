@@ -1,3 +1,7 @@
+# Team:
+Grace Armfield: InfluxDB (influx_db folder)
+Connor Guerin: ClickhouseDB  (clickhouse_db folder)
+Jun Chen: TimescaleDB and Generating Data (timescale_db folder, generate_data folder)
 
 ## Generate Data:
 
