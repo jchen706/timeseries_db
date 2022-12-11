@@ -1,6 +1,8 @@
 # Team:
 Grace Armfield: InfluxDB (influx_db)
+
 Connor Guerin: ClickhouseDB  (clickhouse_db)
+
 Jun Chen: TimescaleDB and Generating Data (timescale_db, generate_data)
 
 ## Generate Data:
